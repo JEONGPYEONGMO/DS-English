@@ -137,6 +137,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .ann-meta{font-size:11px;color:var(--text3);margin-bottom:8px}
 .ann-body{font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap}
 
+/* 당일 출결 현황 */
+.today-att-card{border-radius:var(--radius-lg);padding:16px 18px;margin-top:14px;border:1.5px solid var(--border)}
+.today-att-card.status-att{background:var(--green-bg);border-color:rgba(26,158,106,0.3)}
+.today-att-card.status-abs{background:var(--red-bg);border-color:rgba(214,56,80,0.3)}
+.today-att-card.status-late{background:var(--amber-bg);border-color:rgba(200,122,13,0.3)}
+.today-att-card.status-none{background:var(--bg2)}
+.today-att-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.today-att-label{font-size:12px;font-weight:600;color:var(--text3)}
+.today-att-refresh{font-size:10px;color:var(--text3)}
+.today-att-main{display:flex;align-items:center;gap:12px}
+.today-att-icon{font-size:28px;line-height:1}
+.today-att-status{font-size:18px;font-weight:700}
+.today-att-time{font-size:22px;font-weight:700;font-family:var(--mono);margin-left:auto}
+.today-att-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* 배지 섹션 구분선 */
+.section-divider{height:1px;background:var(--border);margin:4px 0 24px}
+
 .empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
 .empty-icon{font-size:40px;margin-bottom:10px;opacity:0.35;display:block}
 .empty-text{font-size:13px;line-height:1.8}
@@ -184,10 +202,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   </header>
 
   <div class="tab-bar">
-    <button class="tab-btn active" id="tab-att-btn"     onclick="showTab('att')">📅 출결 현황</button>
-    <button class="tab-btn"        id="tab-badges-btn"  onclick="showTab('badges')">🏅 획득 배지</button>
+    <button class="tab-btn active" id="tab-att-btn"      onclick="showTab('att')">📅 출결 현황</button>
     <button class="tab-btn"        id="tab-progress-btn" onclick="showTab('progress')">📈 학업 진도</button>
-    <button class="tab-btn"        id="tab-ann-btn"     onclick="showTab('ann')">📢 공지사항</button>
+    <button class="tab-btn"        id="tab-ann-btn"      onclick="showTab('ann')">📢 공지사항</button>
   </div>
 
   <!-- 출결 탭 -->
@@ -211,10 +228,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
       <div class="stat-box"><div class="stat-num" id="s-late" style="color:var(--amber)">0</div><div class="stat-lbl">지각</div></div>
       <div class="stat-box"><div class="stat-num" id="s-rate" style="color:var(--accent)">-%</div><div class="stat-lbl">출석률</div></div>
     </div>
-  </div>
 
-  <!-- 배지 탭 -->
-  <div id="tab-badges" class="content" style="display:none">
+    <!-- 당일 출결 현황 -->
+    <div id="today-att-card"></div>
+
+    <!-- 배지 섹션 -->
+    <div class="section-divider" style="margin-top:24px"></div>
     <div class="sec-header">
       <span class="sec-title">🏅 획득 배지</span>
       <span class="count-pill" id="badge-total">0개</span>
@@ -310,6 +329,13 @@ function enterApp(){
   calY=new Date().getFullYear();calM=new Date().getMonth();
   renderStudentCard();
   renderCalendar();
+  renderBadges();
+  // 30초마다 당일 출결 자동 갱신
+  setInterval(renderTodayAtt,30000);
+  // 다른 탭(학생 포털)에서 출결 기록 시 즉시 반영
+  window.addEventListener('storage',e=>{
+    if(e.key==='ds_att'||e.key==='ds_attTime')renderTodayAtt();
+  });
 }
 
 // ── 학생 정보 카드 ──
@@ -364,6 +390,43 @@ function renderCalendar(){
   document.getElementById('s-late').textContent=lateC;
   const rate=total>0?Math.round(attC/total*100):'-';
   document.getElementById('s-rate').textContent=rate==='-'?'-':rate+'%';
+  renderTodayAtt();
+}
+
+// ── 당일 출결 현황 (실시간) ──
+function renderTodayAtt(){
+  if(!me)return;
+  const today=new Date().toISOString().split('T')[0];
+  const todayKey=today.replace(/-/g,'');
+  const att=_lo('att');
+  const times=_lo('attTime');
+  const st=(att[todayKey]||{})[me.id];
+  const qrTime=(times[todayKey]||{})[me.id];
+  const now=new Date();
+  const refreshStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} 기준`;
+
+  const stMap={
+    att:{label:'출석',icon:'✅',cls:'status-att',color:'var(--green)'},
+    abs:{label:'결석',icon:'❌',cls:'status-abs',color:'var(--red)'},
+    late:{label:'지각',icon:'⚠️',cls:'status-late',color:'var(--amber)'},
+  };
+  const info=stMap[st]||{label:'미기록',icon:'📋',cls:'status-none',color:'var(--text3)'};
+
+  const card=document.getElementById('today-att-card');
+  card.className=`today-att-card ${info.cls}`;
+  card.innerHTML=`
+    <div class="today-att-top">
+      <span class="today-att-label">🗓 오늘 (${today}) 출결 현황</span>
+      <span class="today-att-refresh">🔄 ${refreshStr}</span>
+    </div>
+    <div class="today-att-main">
+      <span class="today-att-icon">${info.icon}</span>
+      <div>
+        <div class="today-att-status" style="color:${info.color}">${info.label}</div>
+        <div class="today-att-sub">${qrTime?'QR 출석 시간: '+qrTime:'QR 출석 미기록'}</div>
+      </div>
+      ${qrTime?`<span class="today-att-time" style="color:${info.color}">${qrTime}</span>`:''}
+    </div>`;
 }
 
 // ── 배지 ──
@@ -462,11 +525,10 @@ function renderAnn(){
 
 // ── 탭 전환 ──
 function showTab(name){
-  ['att','badges','progress','ann'].forEach(t=>{
+  ['att','progress','ann'].forEach(t=>{
     document.getElementById('tab-'+t).style.display=t===name?'':'none';
     document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===name);
   });
-  if(name==='badges')renderBadges();
   if(name==='progress')renderProgress();
   if(name==='ann')renderAnn();
 }
