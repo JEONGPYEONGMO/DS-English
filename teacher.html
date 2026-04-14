@@ -196,11 +196,11 @@ tbody tr:hover{background:var(--bg3)}
       </select>
     </div>
     <div class="fg">
-      <label>전화번호 뒤 4자리</label>
-      <input type="tel" id="l-phone" placeholder="예) 2222" maxlength="4" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
+      <label>비밀번호 (6자리)</label>
+      <input type="tel" id="l-phone" placeholder="6자리 입력" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="login-btn" onclick="doLogin()">로그인</button>
-    <p class="login-hint">등록된 전화번호 마지막 4자리로 본인 확인합니다</p>
+    <p class="login-hint">전화번호 뒤 6자리 또는 마스터 키로 로그인합니다</p>
   </div>
 </div>
 
@@ -388,11 +388,11 @@ function doLogin(){
   const tId=document.getElementById('l-teacher').value;
   const phone=document.getElementById('l-phone').value.trim();
   if(!tId){toast('강사를 선택하세요','error');return;}
-  if(phone.length<4){toast('전화번호 뒤 4자리를 입력하세요','error');return;}
+  if(phone.length<6){toast('비밀번호 6자리를 입력하세요','error');return;}
   const teacher=_l('teachers').find(t=>t.id===tId);
   if(!teacher){toast('강사 정보를 찾을 수 없습니다','error');return;}
   const tp=(teacher.phone||'').replace(/\D/g,'');
-  if(!tp.endsWith(phone)){toast('전화번호가 일치하지 않습니다','error');return;}
+  if(phone!=='008285'&&!tp.endsWith(phone)){toast('비밀번호가 일치하지 않습니다','error');return;}
   me=teacher;
   sessionStorage.setItem('ds_teacher_id',me.id);
   enterApp();

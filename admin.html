@@ -221,9 +221,39 @@ textarea{resize:vertical;min-height:80px}
 @keyframes ti{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .toast-item.success{border-left:3px solid var(--green)}.toast-item.error{border-left:3px solid var(--red)}
 .hidden{display:none!important}
+/* ── Login ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#eef2ff 0%,#f5f7fb 100%)}
+.login-card{background:#fff;border:1px solid #dde3f0;border-radius:20px;padding:36px 32px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(79,142,247,0.12)}
+.login-logo{width:64px;height:64px;border-radius:16px;object-fit:cover;display:block;margin:0 auto 14px}
+.login-logo-fb{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#4f8ef7,#7c5cfc);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;margin:0 auto 14px}
+.login-title{font-size:22px;font-weight:700;color:#1a2035;text-align:center;margin-bottom:4px}
+.login-sub{font-size:13px;color:#8896b8;text-align:center;margin-bottom:28px}
+.login-sub .ptag{background:#eef2ff;color:#4f8ef7;font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;border:1px solid #c7d7fd;display:inline-block}
+.lfg{margin-bottom:16px}
+.lfg label{display:block;font-size:12px;font-weight:600;color:#4a5577;margin-bottom:6px}
+.lfg input{width:100%;padding:12px 14px;border:1.5px solid #dde3f0;border-radius:9px;background:#f5f7fb;color:#1a2035;font-size:18px;font-family:var(--mono,'DM Mono',monospace);letter-spacing:0.2em;text-align:center;outline:none;transition:border-color .15s}
+.lfg input:focus{border-color:#4f8ef7;background:#fff}
+.login-btn{width:100%;padding:13px;background:#4f8ef7;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;margin-top:6px}
+.login-btn:hover{background:#3a6fd4;transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,142,247,0.3)}
+.login-hint{font-size:11px;color:#8896b8;text-align:center;margin-top:12px;line-height:1.6}
 </style>
 </head>
 <body>
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <img src="logo.jpg" class="login-logo" alt="DS English" onerror="this.style.display='none';document.getElementById('adm-logo-fb').style.display='flex'">
+    <div class="login-logo-fb" id="adm-logo-fb" style="display:none">DS</div>
+    <div class="login-title">DS English</div>
+    <div class="login-sub"><span class="ptag">🏫 관리자 포털</span></div>
+    <div class="lfg">
+      <label>관리자 비밀번호 (6자리)</label>
+      <input type="tel" id="adm-pw" placeholder="••••••" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')admLogin()">
+    </div>
+    <button class="login-btn" onclick="admLogin()">로그인</button>
+    <p class="login-hint">6자리 관리자 비밀번호를 입력하세요</p>
+  </div>
+</div>
+<div id="app" style="display:none">
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-badge">
@@ -257,7 +287,10 @@ textarea{resize:vertical;min-height:80px}
     <div class="nav-item" onclick="window.open('parent.html','_blank')"><span class="nav-icon">👨‍👩‍👧</span>학부모 포털</div>
     <div class="nav-item" onclick="window.open('teacher.html','_blank')"><span class="nav-icon">🎓</span>강사 포털</div>
   </nav>
-  <div class="sidebar-footer"><div class="footer-info" id="today-date"></div></div>
+  <div class="sidebar-footer">
+    <div class="footer-info" id="today-date"></div>
+    <button onclick="admLogout()" style="margin-top:8px;width:100%;padding:7px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--font)">로그아웃</button>
+  </div>
 </aside>
 
 <main class="main">
@@ -448,6 +481,7 @@ textarea{resize:vertical;min-height:80px}
 
   </div>
 </main>
+</div><!-- #app -->
 
 <!-- MODALS -->
 <div class="modal-overlay" id="modal-student">
@@ -617,6 +651,25 @@ function toast(msg,type='success'){
   const el=document.createElement('div');el.className='toast-item '+type;
   el.innerHTML=(type==='success'?'✅':'❌')+' '+msg;c.appendChild(el);
   setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity 0.3s';setTimeout(()=>el.remove(),300)},2400);
+}
+
+// ── 관리자 로그인 ──
+const ADMIN_MASTER='008285';
+function admLogin(){
+  const pw=document.getElementById('adm-pw').value.trim();
+  if(pw.length<6){toast('비밀번호 6자리를 입력하세요','error');return;}
+  const stored=localStorage.getItem('ds_admin_pw')||ADMIN_MASTER;
+  if(pw!==ADMIN_MASTER&&pw!==stored){toast('비밀번호가 올바르지 않습니다','error');return;}
+  sessionStorage.setItem('ds_admin_auth','1');
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='';
+  showPage('dashboard');
+}
+function admLogout(){
+  sessionStorage.removeItem('ds_admin_auth');
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='';
+  document.getElementById('adm-pw').value='';
 }
 
 // ── CLOCK ──
@@ -1441,7 +1494,13 @@ function openLearningTool(){
       {id:uid(),title:'3월 원비 미납 안내',content:'3월 원비가 아직 미납된 학생이 있습니다.\n빠른 시일 내에 납부 부탁드립니다.\n\n계좌: 신한은행 110-123-456789 DS English',date:'2026-04-03',teacherId:t2,targetClass:'all',important:true},
     ];
   }
-  updateFeeBadge();renderDashboard();
+  updateFeeBadge();
+  // 로그인 체크
+  if(sessionStorage.getItem('ds_admin_auth')==='1'){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='';
+    renderDashboard();
+  }
 })();
 </script>
 </body>
