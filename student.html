@@ -122,9 +122,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .cam-guide-txt{color:#fff;font-size:13px;font-weight:500;text-shadow:0 1px 4px rgba(0,0,0,0.8);background:rgba(0,0,0,0.4);padding:5px 14px;border-radius:20px}
 .cam-status{padding:12px 18px;text-align:center;font-size:13px;color:#aaa;background:rgba(20,20,20,0.95);min-height:42px}
 
-/* QR 출석 버튼 */
-.qr-btn{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all .15s}
-.qr-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+/* QR 출석 버튼 (헤더용 소형 - 미사용) */
+.qr-btn-sm{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all .15s}
+/* QR 출석 배너 버튼 */
+.qr-banner{width:100%;padding:18px 24px;background:linear-gradient(135deg,var(--accent) 0%,var(--purple) 100%);color:#fff;border:none;border-radius:var(--radius-lg);font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;box-shadow:0 4px 18px rgba(79,142,247,0.35);transition:all .18s;text-align:left}
+.qr-banner:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(79,142,247,0.45)}
+.qr-banner:active{transform:translateY(0)}
+.qr-banner-icon{font-size:34px;line-height:1;flex-shrink:0}
+.qr-banner-text{}
+.qr-banner-title{font-size:16px;font-weight:700;line-height:1.2}
+.qr-banner-sub{font-size:12px;opacity:0.85;margin-top:3px;font-weight:400}
 
 /* 출석 시간 기록 */
 .att-times-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-top:14px}
@@ -171,7 +178,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
     <span class="hdr-name" id="h-name"></span>
     <span class="hdr-cls" id="h-class"></span>
     <div class="hdr-right">
-      <button class="qr-btn" onclick="openCamera()">📷 QR 출석</button>
       <button class="logout-btn" onclick="logout()">로그아웃</button>
     </div>
   </header>
@@ -179,6 +185,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   <!-- 출결 섹션 -->
   <div id="tab-att" class="content">
     <div class="sec-header"><span class="sec-title">📅 내 출결</span></div>
+    <button class="qr-banner" onclick="openCamera()">
+      <span class="qr-banner-icon">📷</span>
+      <div class="qr-banner-text">
+        <div class="qr-banner-title">QR 출석 체크</div>
+        <div class="qr-banner-sub">선생님의 QR 코드를 스캔하세요</div>
+      </div>
+    </button>
     <div class="cal-header-row">
       <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
       <div class="cal-title" id="cal-title"></div>
