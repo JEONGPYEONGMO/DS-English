@@ -247,7 +247,7 @@ textarea{resize:vertical;min-height:80px}
     <div class="login-sub"><span class="ptag">🏫 관리자 포털</span></div>
     <div class="lfg">
       <label>관리자 비밀번호</label>
-      <input type="tel" id="adm-pw" placeholder="비밀번호 입력" maxlength="7" inputmode="numeric" onkeydown="if(event.key==='Enter')admLogin()">
+      <input type="tel" id="adm-pw" placeholder="비밀번호 입력" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')admLogin()">
     </div>
     <button class="login-btn" onclick="admLogin()">로그인</button>
   </div>
@@ -653,7 +653,7 @@ function toast(msg,type='success'){
 }
 
 // ── 관리자 로그인 ──
-const ADMIN_MASTER='0082825';
+const ADMIN_MASTER='008285';
 function admLogin(){
   const pw=document.getElementById('adm-pw').value.trim();
   if(pw.length<6){toast('비밀번호 6자리를 입력하세요','error');return;}

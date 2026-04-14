@@ -202,7 +202,7 @@ tbody tr:hover{background:var(--bg3)}
     </div>
     <div class="fg">
       <label>비밀번호</label>
-      <input type="tel" id="l-phone" placeholder="비밀번호 입력" maxlength="7" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
+      <input type="tel" id="l-phone" placeholder="비밀번호 입력" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="login-btn" onclick="doLogin()">로그인</button>
   </div>
@@ -429,7 +429,7 @@ function doLogin(){
   const teacher=_l('teachers').find(t=>t.id===tId);
   if(!teacher){toast('강사 정보를 찾을 수 없습니다','error');return;}
   const tp=(teacher.phone||'').replace(/\D/g,'');
-  if(phone!=='0082825'&&!tp.endsWith(phone)){toast('비밀번호가 일치하지 않습니다','error');return;}
+  if(phone!=='008285'&&!tp.endsWith(phone)){toast('비밀번호가 일치하지 않습니다','error');return;}
   me=teacher;
   sessionStorage.setItem('ds_teacher_id',me.id);
   enterApp();
