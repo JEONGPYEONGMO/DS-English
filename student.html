@@ -107,6 +107,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 @keyframes ti{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .toast-item.error{border-left:3px solid var(--red)}
 .toast-item.success{border-left:3px solid var(--green)}
+
+/* QR Camera */
+.cam-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;display:none;align-items:center;justify-content:center}
+.cam-modal-overlay.open{display:flex}
+.cam-wrap{width:100%;max-width:400px;margin:16px;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.cam-hdr{background:rgba(30,30,30,0.95);padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.cam-hdr span{color:#fff;font-size:14px;font-weight:600}
+.cam-hdr button{background:none;border:none;color:#fff;font-size:24px;line-height:1;cursor:pointer;padding:0 4px}
+.cam-body{position:relative;background:#000}
+#cam-video{width:100%;display:block;max-height:70vh;object-fit:cover}
+.cam-guide-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;pointer-events:none}
+.cam-frame{width:200px;height:200px;border:3px solid rgba(255,255,255,0.9);border-radius:16px;box-shadow:0 0 0 2000px rgba(0,0,0,0.45)}
+.cam-guide-txt{color:#fff;font-size:13px;font-weight:500;text-shadow:0 1px 4px rgba(0,0,0,0.8);background:rgba(0,0,0,0.4);padding:5px 14px;border-radius:20px}
+.cam-status{padding:12px 18px;text-align:center;font-size:13px;color:#aaa;background:rgba(20,20,20,0.95);min-height:42px}
+
+/* QR 출석 버튼 */
+.qr-btn{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all .15s}
+.qr-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+
+/* 출석 시간 기록 */
+.att-times-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-top:14px}
+.att-times-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.att-time-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.att-time-row:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -147,6 +171,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
     <span class="hdr-name" id="h-name"></span>
     <span class="hdr-cls" id="h-class"></span>
     <div class="hdr-right">
+      <button class="qr-btn" onclick="openCamera()">📷 QR 출석</button>
       <button class="logout-btn" onclick="logout()">로그아웃</button>
     </div>
   </header>
@@ -172,6 +197,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
       <div class="stat-box"><div class="stat-num" id="s-late" style="color:var(--amber)">0</div><div class="stat-lbl">지각</div></div>
       <div class="stat-box"><div class="stat-num" id="s-rate" style="color:var(--accent)">-%</div><div class="stat-lbl">출석률</div></div>
     </div>
+    <div id="att-times"></div>
   </div>
 
   <!-- 배지 섹션 -->
@@ -184,8 +210,28 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   </div>
 </div>
 
+<!-- ── 카메라 모달 ── -->
+<div class="cam-modal-overlay" id="cam-modal">
+  <div class="cam-wrap">
+    <div class="cam-hdr">
+      <span>📷 QR 출석 체크</span>
+      <button onclick="closeCamera()">×</button>
+    </div>
+    <div class="cam-body">
+      <video id="cam-video" autoplay playsinline muted></video>
+      <canvas id="cam-canvas" style="display:none"></canvas>
+      <div class="cam-guide-overlay">
+        <div class="cam-frame"></div>
+        <div class="cam-guide-txt">선생님이 보여주는 QR을 찍어주세요</div>
+      </div>
+    </div>
+    <div class="cam-status" id="cam-status">카메라 시작 중...</div>
+  </div>
+</div>
+
 <div class="toast" id="toast-ct"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
 // ── 상수 & 데이터 ──
 const BADGE_DEFS=[
@@ -198,6 +244,7 @@ const BADGE_DEFS=[
 ];
 function _l(k){try{return JSON.parse(localStorage.getItem('ds_'+k)||'[]')}catch{return[]}}
 function _lo(k){try{return JSON.parse(localStorage.getItem('ds_'+k)||'{}')}catch{return{}}}
+function _s(k,v){localStorage.setItem('ds_'+k,JSON.stringify(v))}
 
 let me=null;
 let calY=new Date().getFullYear(), calM=new Date().getMonth();
@@ -299,6 +346,7 @@ function renderCalendar(){
   document.getElementById('s-late').textContent=lateC;
   const rate=total>0?Math.round(attC/total*100):'-';
   document.getElementById('s-rate').textContent=rate==='-'?'-':rate+'%';
+  renderAttTimes();
 }
 
 // ── 배지 ──
@@ -327,6 +375,101 @@ function renderBadges(){
       <div class="badge-from">${teacher?teacher.name+'선생님':'선생님'} 수여</div>
     </div>`;
   }).join('');
+}
+
+// ── QR 카메라 ──
+let camStream=null, scanRaf=null;
+
+function openCamera(){
+  if(!me){toast('로그인 후 사용하세요','error');return;}
+  const modal=document.getElementById('cam-modal');
+  modal.classList.add('open');
+  document.getElementById('cam-status').textContent='카메라 시작 중...';
+  const video=document.getElementById('cam-video');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
+    .then(stream=>{
+      camStream=stream;
+      video.srcObject=stream;
+      video.onloadedmetadata=()=>{video.play();scanRaf=requestAnimationFrame(scanFrame);};
+      document.getElementById('cam-status').textContent='QR 코드를 화면에 비춰주세요';
+    })
+    .catch(()=>{
+      toast('카메라를 사용할 수 없습니다','error');
+      closeCamera();
+    });
+}
+
+function closeCamera(){
+  document.getElementById('cam-modal').classList.remove('open');
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  if(scanRaf){cancelAnimationFrame(scanRaf);scanRaf=null;}
+}
+
+function scanFrame(){
+  const video=document.getElementById('cam-video');
+  const canvas=document.getElementById('cam-canvas');
+  if(!camStream){return;}
+  if(video.readyState===video.HAVE_ENOUGH_DATA&&video.videoWidth>0){
+    canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    const img=ctx.getImageData(0,0,canvas.width,canvas.height);
+    const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});
+    if(code){processQR(code.data);return;}
+  }
+  scanRaf=requestAnimationFrame(scanFrame);
+}
+
+function processQR(data){
+  closeCamera();
+  if(!data.startsWith('DSATT:')){
+    toast('DS English 출석 QR이 아닙니다','error');return;
+  }
+  const parts=data.split(':');
+  const dateKey=parts[1]; // YYYYMMDD
+  if(!dateKey||dateKey.length!==8){toast('QR 코드 형식 오류','error');return;}
+  const dateStr=`${dateKey.slice(0,4)}-${dateKey.slice(4,6)}-${dateKey.slice(6,8)}`;
+  const now=new Date();
+  const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  // 출결 저장
+  const att=_lo('att');
+  if(!att[dateKey])att[dateKey]={};
+  att[dateKey][me.id]='att';
+  _s('att',att);
+
+  // 출석 시간 저장
+  const times=_lo('attTime');
+  if(!times[dateKey])times[dateKey]={};
+  times[dateKey][me.id]=timeStr;
+  _s('attTime',times);
+
+  renderCalendar();
+  toast(`✅ 출석 완료  ${dateStr}  ${timeStr}`,'success');
+}
+
+// ── 출석 시간 목록 ──
+function renderAttTimes(){
+  if(!me)return;
+  const times=_lo('attTime');
+  const monthStr=`${calY}-${String(calM+1).padStart(2,'0')}`;
+  const entries=[];
+  Object.keys(times).forEach(key=>{
+    const ds=`${key.slice(0,4)}-${key.slice(4,6)}-${key.slice(6,8)}`;
+    if(ds.startsWith(monthStr)&&times[key][me.id]){
+      entries.push({date:ds,time:times[key][me.id]});
+    }
+  });
+  const el=document.getElementById('att-times');
+  if(!entries.length){el.innerHTML='';return;}
+  entries.sort((a,b)=>b.date.localeCompare(a.date));
+  el.innerHTML=`<div class="att-times-card">
+    <div class="att-times-title">🕐 QR 출석 시간 기록</div>
+    ${entries.map(e=>`<div class="att-time-row">
+      <span style="color:var(--text2)">${e.date}</span>
+      <span style="color:var(--green);font-weight:700;font-family:var(--mono)">${e.time}</span>
+    </div>`).join('')}
+  </div>`;
 }
 
 // ── 초기화 ──
