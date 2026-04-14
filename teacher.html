@@ -148,6 +148,15 @@ tbody tr:hover{background:var(--bg3)}
 .tag-class{background:var(--accent-glow);color:var(--accent)}
 .tag-all{background:var(--bg3);color:var(--text3)}
 
+/* Messages from admin */
+.msg-card{background:var(--bg2);border:2px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 5px rgba(79,142,247,0.07)}
+.msg-type-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+.mtype-info{background:rgba(79,142,247,0.1);color:var(--accent);border:1px solid rgba(79,142,247,0.2)}
+.mtype-class{background:var(--green-bg);color:var(--green);border:1px solid rgba(26,158,106,0.2)}
+.mtype-pay{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(200,122,13,0.2)}
+.mtype-schedule{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(124,92,252,0.2)}
+.mtype-etc{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+
 /* Modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(30,40,80,0.4);z-index:999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
 .modal-overlay.open{display:flex}
@@ -316,6 +325,12 @@ tbody tr:hover{background:var(--bg3)}
     </div>
 
     <div id="ann-list"></div>
+
+    <div class="sec-header" style="margin-top:28px">
+      <span class="sec-title">💬 학원 메시지</span>
+      <span class="count-pill" id="tmsg-count">0건</span>
+    </div>
+    <div id="teacher-msg-list"></div>
   </div>
 </div>
 
@@ -705,27 +720,51 @@ function renderAnn(){
   const list=document.getElementById('ann-list');
   if(!anns.length){
     list.innerHTML=`<div class="empty-state"><span class="empty-icon">📢</span><div class="empty-text">등록된 공지사항이 없습니다<br>+ 공지 작성 버튼으로 새 공지를 작성하세요</div></div>`;
+  } else {
+    list.innerHTML=[...anns].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(a=>{
+      const cls=a.targetClass==='all'?null:(classes.find(c=>c.id===a.targetClass));
+      const isOwn=a.teacherId===me.id||!a.teacherId;
+      return `<div class="ann-card${a.important?' important':''}">
+        <div class="ann-head-row">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+              ${a.important?'<span class="ann-tag tag-important">🔴 중요</span>':''}
+              ${cls?`<span class="ann-tag tag-class">${cls.name}</span>`:'<span class="ann-tag tag-all">전체</span>'}
+            </div>
+            <div class="ann-title-text">${a.title}</div>
+          </div>
+          ${isOwn?`<div class="ann-actions">
+            <button class="btn btn-ghost btn-xs" onclick="editAnn('${a.id}')">수정</button>
+            <button class="btn btn-danger btn-xs" onclick="deleteAnn('${a.id}')">삭제</button>
+          </div>`:''}
+        </div>
+        <div class="ann-meta"><span>${a.date||''}</span><span>${isOwn?'(내가 작성)':'타 강사 작성'}</span></div>
+        <div class="ann-body">${a.content||''}</div>
+      </div>`;
+    }).join('');
+  }
+  renderTeacherMsgs();
+}
+
+// ── 학원 메시지 (선생님 소통) ──
+const TMSG_TYPE_CLS={'업무 안내':'mtype-info','수업 안내':'mtype-class','급여 관련':'mtype-pay','일정 안내':'mtype-schedule','기타':'mtype-etc'};
+function renderTeacherMsgs(){
+  if(!me)return;
+  const msgs=_l('teacherMessages').filter(m=>m.teacherId===me.id);
+  document.getElementById('tmsg-count').textContent=msgs.length+'건';
+  const list=document.getElementById('teacher-msg-list');
+  if(!msgs.length){
+    list.innerHTML=`<div class="empty-state"><span class="empty-icon">💬</span><div class="empty-text">학원에서 보낸 메시지가 없습니다</div></div>`;
     return;
   }
-  list.innerHTML=[...anns].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(a=>{
-    const cls=a.targetClass==='all'?null:(classes.find(c=>c.id===a.targetClass));
-    const isOwn=a.teacherId===me.id||!a.teacherId;
-    return `<div class="ann-card${a.important?' important':''}">
-      <div class="ann-head-row">
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-            ${a.important?'<span class="ann-tag tag-important">🔴 중요</span>':''}
-            ${cls?`<span class="ann-tag tag-class">${cls.name}</span>`:'<span class="ann-tag tag-all">전체</span>'}
-          </div>
-          <div class="ann-title-text">${a.title}</div>
-        </div>
-        ${isOwn?`<div class="ann-actions">
-          <button class="btn btn-ghost btn-xs" onclick="editAnn('${a.id}')">수정</button>
-          <button class="btn btn-danger btn-xs" onclick="deleteAnn('${a.id}')">삭제</button>
-        </div>`:''}
+  list.innerHTML=[...msgs].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(m=>{
+    const tc=TMSG_TYPE_CLS[m.type]||'mtype-etc';
+    return `<div class="msg-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span class="msg-type-tag ${tc}">${m.type||'기타'}</span>
+        <span style="font-size:11px;color:var(--text3);margin-left:auto">${m.date||''}</span>
       </div>
-      <div class="ann-meta"><span>${a.date||''}</span><span>${isOwn?'(내가 작성)':'타 강사 작성'}</span></div>
-      <div class="ann-body">${a.content||''}</div>
+      <div class="ann-body">${m.content||''}</div>
     </div>`;
   }).join('');
 }

@@ -276,6 +276,8 @@ textarea{resize:vertical;min-height:80px}
     <div class="nav-item" onclick="showPage('scores')"><span class="nav-icon">📝</span>성적 / 평가</div>
     <div class="nav-section">소통</div>
     <div class="nav-item" onclick="showPage('messages')"><span class="nav-icon">💬</span>학부모 소통</div>
+    <div class="nav-item" onclick="showPage('teachermsgs')"><span class="nav-icon">💬</span>선생님 소통</div>
+    <div class="nav-item" onclick="showPage('studentmsgs')"><span class="nav-icon">💬</span>학생 소통</div>
     <div class="nav-section">배지 / 공지</div>
     <div class="nav-item" onclick="showPage('badges')"><span class="nav-icon">🏅</span>배지 관리</div>
     <div class="nav-item" onclick="showPage('announcements')"><span class="nav-icon">📢</span>공지사항</div>
@@ -457,6 +459,18 @@ textarea{resize:vertical;min-height:80px}
       <div class="table-wrap"><table><thead><tr><th>학생</th><th>유형</th><th>내용</th><th>날짜</th><th>관리</th></tr></thead><tbody id="msg-tbody"></tbody></table></div>
     </div>
 
+    <!-- TEACHER MESSAGES -->
+    <div id="page-teachermsgs" class="hidden">
+      <div class="section-header"><div class="section-title">선생님 소통</div><button class="btn btn-primary ml-auto" onclick="openModal('teachermsg')">+ 메시지 작성</button></div>
+      <div class="table-wrap"><table><thead><tr><th>강사</th><th>유형</th><th>내용</th><th>날짜</th><th>관리</th></tr></thead><tbody id="tmsg-tbody"></tbody></table></div>
+    </div>
+
+    <!-- STUDENT MESSAGES -->
+    <div id="page-studentmsgs" class="hidden">
+      <div class="section-header"><div class="section-title">학생 소통</div><button class="btn btn-primary ml-auto" onclick="openModal('studentmsg')">+ 메시지 작성</button></div>
+      <div class="table-wrap"><table><thead><tr><th>학생</th><th>유형</th><th>내용</th><th>날짜</th><th>관리</th></tr></thead><tbody id="smsg-tbody"></tbody></table></div>
+    </div>
+
     <!-- BADGES -->
     <div id="page-badges" class="hidden">
       <div class="section-header">
@@ -560,6 +574,30 @@ textarea{resize:vertical;min-height:80px}
   <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('message')">취소</button><button class="btn btn-primary" onclick="saveMessage()">저장</button></div></div>
 </div>
 
+<!-- Teacher Message Modal -->
+<div class="modal-overlay" id="modal-teachermsg">
+  <div class="modal"><div class="modal-header"><div class="modal-title">선생님 메시지 작성</div><button class="modal-close" onclick="closeModal('teachermsg')">×</button></div>
+  <div class="modal-body"><div class="form-grid">
+    <div class="form-group span2"><label>강사 *</label><select id="tm-teacher"><option value="">선택</option></select></div>
+    <div class="form-group"><label>유형</label><select id="tm-type"><option>업무 안내</option><option>수업 안내</option><option>급여 관련</option><option>일정 안내</option><option>기타</option></select></div>
+    <div class="form-group"><label>날짜</label><input type="date" id="tm-date"></div>
+    <div class="form-group span2"><label>내용 *</label><textarea id="tm-content" style="min-height:100px"></textarea></div>
+  </div></div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('teachermsg')">취소</button><button class="btn btn-primary" onclick="saveTeacherMsg()">저장</button></div></div>
+</div>
+
+<!-- Student Message Modal -->
+<div class="modal-overlay" id="modal-studentmsg">
+  <div class="modal"><div class="modal-header"><div class="modal-title">학생 메시지 작성</div><button class="modal-close" onclick="closeModal('studentmsg')">×</button></div>
+  <div class="modal-body"><div class="form-grid">
+    <div class="form-group span2"><label>학생 *</label><select id="sm-student"><option value="">선택</option></select></div>
+    <div class="form-group"><label>유형</label><select id="sm-type"><option>학습 안내</option><option>출결 알림</option><option>성적 통보</option><option>수업 공지</option><option>기타</option></select></div>
+    <div class="form-group"><label>날짜</label><input type="date" id="sm-date"></div>
+    <div class="form-group span2"><label>내용 *</label><textarea id="sm-content" style="min-height:100px"></textarea></div>
+  </div></div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('studentmsg')">취소</button><button class="btn btn-primary" onclick="saveStudentMsg()">저장</button></div></div>
+</div>
+
 <!-- Quick Attendance Modal -->
 <div class="modal-overlay" id="modal-quickatt">
   <div class="modal modal-lg"><div class="modal-header"><div class="modal-title">출결 일괄 입력</div><button class="modal-close" onclick="closeModal('quickatt')">×</button></div>
@@ -617,6 +655,8 @@ const DB={
   get fees(){return this._l('fees')},set fees(v){this._s('fees',v)},
   get scores(){return this._l('scores')},set scores(v){this._s('scores',v)},
   get messages(){return this._l('messages')},set messages(v){this._s('messages',v)},
+  get teacherMessages(){return this._l('teacherMessages')},set teacherMessages(v){this._s('teacherMessages',v)},
+  get studentMessages(){return this._l('studentMessages')},set studentMessages(v){this._s('studentMessages',v)},
   get att(){try{return JSON.parse(localStorage.getItem('ds_att')||'{}')}catch{return{}}},
   set att(v){localStorage.setItem('ds_att',JSON.stringify(v))},
   get studentBadges(){return this._l('studentBadges')},set studentBadges(v){this._s('studentBadges',v)},
@@ -680,7 +720,7 @@ function tick(){
 setInterval(tick,1000);tick();
 
 // ── NAV ──
-const PG={dashboard:'대시보드',attendance:'출결 관리',students:'학생 관리',classes:'수업 관리',teachers:'강사 관리',fees:'원비 / 재무',scores:'성적 / 평가',messages:'학부모 소통',badges:'배지 관리',announcements:'공지사항'};
+const PG={dashboard:'대시보드',attendance:'출결 관리',students:'학생 관리',classes:'수업 관리',teachers:'강사 관리',fees:'원비 / 재무',scores:'성적 / 평가',messages:'학부모 소통',teachermsgs:'선생님 소통',studentmsgs:'학생 소통',badges:'배지 관리',announcements:'공지사항'};
 function showPage(name){
   Object.keys(PG).forEach(p=>document.getElementById('page-'+p).classList.add('hidden'));
   document.getElementById('page-'+name).classList.remove('hidden');
@@ -689,17 +729,22 @@ function showPage(name){
   document.querySelectorAll('.nav-item').forEach(el=>{if(el.textContent.trim().startsWith(PG[name].split('/')[0].trim()))el.classList.add('active');});
   const R={dashboard:renderDashboard,attendance:()=>{populateAttFilter();renderCalendar();if(!selDate)selectDate(todayStr());},
     students:renderStudents,classes:renderClasses,teachers:renderTeachers,fees:renderFees,scores:renderScores,messages:renderMessages,
+    teachermsgs:renderTeacherMessages,studentmsgs:renderStudentMessages,
     badges:renderBadges_admin,announcements:renderAnnouncements};
   if(R[name])R[name]();
 }
 
 // ── MODAL ──
 function openModal(type){
+  if(type==='badge'){openModal_badge();return;}
+  if(type==='ann'){editAnnId=null;openModal_ann();return;}
   _fillSelects();
   if(type==='student'&&!editId.student){_clrStudent();document.getElementById('s-date').value=todayStr();}
   if(type==='fee'&&!editId.fee){document.getElementById('f-month').value=nowMonth();}
   if(type==='score'){document.getElementById('sc-date').value=todayStr();}
   if(type==='message'){document.getElementById('m-date').value=todayStr();}
+  if(type==='teachermsg'){document.getElementById('tm-date').value=todayStr();document.getElementById('tm-content').value='';}
+  if(type==='studentmsg'){document.getElementById('sm-date').value=todayStr();document.getElementById('sm-content').value='';}
   if(type==='teacher'&&!editId.teacher){_clrTeacher();document.getElementById('t-hire').value=todayStr();}
   document.getElementById('modal-'+type).classList.add('open');
 }
@@ -716,11 +761,13 @@ function _fillSelects(){
   C.forEach(c=>sc.innerHTML+=`<option value="${c.id}">${c.name}</option>`);
   const ct=document.getElementById('c-teacher');ct.innerHTML='<option value="">미지정</option>';
   T.forEach(t=>ct.innerHTML+=`<option value="${t.id}">${t.name}</option>`);
-  ['f-student','sc-student','m-student'].forEach(id=>{
+  ['f-student','sc-student','m-student','sm-student'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
     el.innerHTML='<option value="">선택</option>';
     S.forEach(s=>el.innerHTML+=`<option value="${s.id}">${s.name} (${s.level})</option>`);
   });
+  const tmt=document.getElementById('tm-teacher');
+  if(tmt){tmt.innerHTML='<option value="">선택</option>';T.forEach(t=>tmt.innerHTML+=`<option value="${t.id}">${t.name}</option>`);}
 }
 
 // ══ ATTENDANCE ══
@@ -1230,6 +1277,52 @@ function renderMessages(){
   }).join('');
 }
 
+// ══ TEACHER MESSAGES ══
+function saveTeacherMsg(){
+  const tId=document.getElementById('tm-teacher').value,content=document.getElementById('tm-content').value.trim();
+  if(!tId||!content){toast('강사와 내용을 입력하세요','error');return;}
+  const M=DB.teacherMessages;
+  M.push({id:uid(),teacherId:tId,type:document.getElementById('tm-type').value,content,date:document.getElementById('tm-date').value});
+  DB.teacherMessages=M;toast('저장되었습니다');closeModal('teachermsg');renderTeacherMessages();
+}
+function deleteTeacherMsg(id){if(!confirm('삭제?'))return;DB.teacherMessages=DB.teacherMessages.filter(m=>m.id!==id);toast('삭제되었습니다');renderTeacherMessages();}
+function renderTeacherMessages(){
+  const M=DB.teacherMessages,T=DB.teachers;
+  const tc={'업무 안내':'badge-blue','수업 안내':'badge-green','급여 관련':'badge-amber','일정 안내':'badge-purple','기타':'badge-gray'};
+  const tb=document.getElementById('tmsg-tbody');
+  if(!M.length){tb.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">메시지 없음</div></div></td></tr>`;return;}
+  tb.innerHTML=[...M].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(m=>{
+    const t=T.find(x=>x.id===m.teacherId);
+    return `<tr><td class="td-name">${t?t.name:'?'}</td><td><span class="badge ${tc[m.type]||'badge-gray'}">${m.type}</span></td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.content}</td>
+      <td style="font-size:12px;color:var(--text3)">${m.date||'-'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteTeacherMsg('${m.id}')">삭제</button></td></tr>`;
+  }).join('');
+}
+
+// ══ STUDENT MESSAGES ══
+function saveStudentMsg(){
+  const sId=document.getElementById('sm-student').value,content=document.getElementById('sm-content').value.trim();
+  if(!sId||!content){toast('학생과 내용을 입력하세요','error');return;}
+  const M=DB.studentMessages;
+  M.push({id:uid(),studentId:sId,type:document.getElementById('sm-type').value,content,date:document.getElementById('sm-date').value});
+  DB.studentMessages=M;toast('저장되었습니다');closeModal('studentmsg');renderStudentMessages();
+}
+function deleteStudentMsg(id){if(!confirm('삭제?'))return;DB.studentMessages=DB.studentMessages.filter(m=>m.id!==id);toast('삭제되었습니다');renderStudentMessages();}
+function renderStudentMessages(){
+  const M=DB.studentMessages,S=DB.students;
+  const tc={'학습 안내':'badge-blue','출결 알림':'badge-amber','성적 통보':'badge-green','수업 공지':'badge-purple','기타':'badge-gray'};
+  const tb=document.getElementById('smsg-tbody');
+  if(!M.length){tb.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">메시지 없음</div></div></td></tr>`;return;}
+  tb.innerHTML=[...M].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(m=>{
+    const s=S.find(x=>x.id===m.studentId);
+    return `<tr><td class="td-name">${s?s.name:'?'}</td><td><span class="badge ${tc[m.type]||'badge-gray'}">${m.type}</span></td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.content}</td>
+      <td style="font-size:12px;color:var(--text3)">${m.date||'-'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteStudentMsg('${m.id}')">삭제</button></td></tr>`;
+  }).join('');
+}
+
 // ══ DASHBOARD ══
 function renderDashboard(){
   const S=DB.students,C=DB.classes,F=DB.fees;
@@ -1370,14 +1463,6 @@ function renderAnnouncements(){
 function viewAnn(id){
   const a=DB.announcements.find(x=>x.id===id);if(!a)return;
   alert(`[${a.date}] ${a.title}\n\n${a.content}`);
-}
-
-// Override openModal to route badge/ann
-const _origOpenModal=openModal;
-function openModal(type){
-  if(type==='badge'){openModal_badge();return;}
-  if(type==='ann'){editAnnId=null;openModal_ann();return;}
-  _origOpenModal(type);
 }
 
 // ══ LEARNING TOOL ══
