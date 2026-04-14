@@ -8,8 +8,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#f5f7fb;--bg2:#ffffff;--bg3:#f0f2f8;--bg4:#e8ecf5;
-  --border:#dde3f0;--border2:#c9d1e8;
+  --bg:#e8f4ff;--bg2:#ffffff;--bg3:#d4eaff;--bg4:#bddaff;
+  --border:#90c4f5;--border2:#6aaae8;
   --text:#1a2035;--text2:#4a5577;--text3:#8896b8;
   --accent:#4f8ef7;--accent2:#3a6fd4;--accent-glow:rgba(79,142,247,0.12);
   --green:#1a9e6a;--green-bg:rgba(26,158,106,0.1);
@@ -22,8 +22,8 @@
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh}
 
 /* Login */
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#eef2ff 0%,#f5f7fb 100%)}
-.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(79,142,247,0.1)}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#c8e4ff 0%,#e8f4ff 100%)}
+.login-card{background:var(--bg2);border:2px solid var(--border);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(79,142,247,0.18)}
 .login-logo{width:64px;height:64px;border-radius:16px;object-fit:cover;display:block;margin:0 auto 14px;box-shadow:0 4px 12px rgba(79,142,247,0.2)}
 .login-logo-fallback{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#4f8ef7,#7c5cfc);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;margin:0 auto 14px}
 .login-title{font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px}
@@ -60,7 +60,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .cal-title{font-size:16px;font-weight:700;color:var(--text)}
 .cal-nav{background:var(--bg3);border:1px solid var(--border);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:18px;transition:all .15s;border:none}
 .cal-nav:hover{background:var(--bg4);color:var(--text)}
-.cal-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.cal-card{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 2px 10px rgba(79,142,247,0.1)}
 .cal-wdays{display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg3);border-bottom:1px solid var(--border)}
 .cal-wd{text-align:center;font-size:11px;font-weight:600;color:var(--text3);padding:9px 0}
 .cal-wd:first-child{color:var(--red)}.cal-wd:last-child{color:var(--accent)}
@@ -79,7 +79,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 
 /* Stats */
 .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
-.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center}
+.stat-box{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center;box-shadow:0 1px 5px rgba(79,142,247,0.08)}
 .stat-num{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1}
 .stat-lbl{font-size:11px;color:var(--text3);margin-top:4px}
 
@@ -88,7 +88,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .sec-title{font-size:15px;font-weight:700;color:var(--text)}
 .count-pill{font-size:12px;color:var(--text3);background:var(--bg3);padding:3px 12px;border-radius:20px;border:1px solid var(--border)}
 .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
-.badge-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px 14px;text-align:center;transition:all .2s}
+.badge-card{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);padding:20px 14px;text-align:center;transition:all .2s;box-shadow:0 1px 5px rgba(79,142,247,0.08)}
 .badge-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(30,40,80,0.1)}
 .badge-icon-wrap{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:32px}
 .badge-name{font-size:13px;font-weight:700;margin-bottom:4px}
@@ -166,7 +166,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
       <input type="tel" id="l-phone" placeholder="0000" maxlength="4" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="login-btn" onclick="doLogin()">로그인</button>
-    <p class="login-hint">기본 비밀번호는 <b>0000</b>입니다<br>전화번호 뒤 4자리도 사용 가능합니다</p>
   </div>
 </div>
 
@@ -294,7 +293,7 @@ function doLogin(){
   const student=_l('students').find(s=>s.id===sId);
   if(!student){toast('학생 정보를 찾을 수 없습니다','error');return;}
   const sp=(student.phone||'').replace(/\D/g,'');
-  const ok=pw==='0000'||pw==='8285'||sp.endsWith(pw);
+  const ok=pw==='8285'||sp.endsWith(pw);
   if(!ok){toast('비밀번호가 일치하지 않습니다','error');return;}
   me=student;
   sessionStorage.setItem('ds_student_id',me.id);

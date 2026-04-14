@@ -8,8 +8,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#f5f7fb;--bg2:#ffffff;--bg3:#f0f2f8;--bg4:#e8ecf5;
-  --border:#dde3f0;--border2:#c9d1e8;
+  --bg:#f0ecff;--bg2:#ffffff;--bg3:#e8e2ff;--bg4:#ded6ff;
+  --border:#c4b8f5;--border2:#a896e8;
   --text:#1a2035;--text2:#4a5577;--text3:#8896b8;
   --accent:#4f8ef7;--accent2:#3a6fd4;--accent-glow:rgba(79,142,247,0.12);
   --green:#1a9e6a;--green-bg:rgba(26,158,106,0.1);
@@ -22,8 +22,8 @@
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh}
 
 /* Login */
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#f5f3ff 0%,#f5f7fb 100%)}
-.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(124,92,252,0.1)}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#e8e0ff 0%,#f0ecff 100%)}
+.login-card{background:var(--bg2);border:2px solid var(--border);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(124,92,252,0.18)}
 .login-logo{width:64px;height:64px;border-radius:16px;object-fit:cover;display:block;margin:0 auto 14px}
 .login-logo-fallback{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#7c5cfc,#4f8ef7);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;margin:0 auto 14px}
 .login-title{font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px}
@@ -43,9 +43,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .hdr-brand{font-size:14px;font-weight:700;color:var(--text);flex-shrink:0}
 .hdr-name{font-size:14px;font-weight:600;color:var(--text2)}
 .hdr-cls{background:var(--purple-bg);color:var(--purple);font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;border:1px solid rgba(124,92,252,0.25);flex-shrink:0}
-.hdr-right{margin-left:auto}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .logout-btn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:5px 12px;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--font)}
 .logout-btn:hover{background:var(--bg3)}
+.qr-gen-btn{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all .15s;box-shadow:0 2px 8px rgba(124,92,252,0.3)}
+.qr-gen-btn:hover{background:#6b46e8;transform:translateY(-1px)}
+/* QR Modal */
+.qr-modal-inner{background:var(--bg2);border:2px solid var(--border);border-radius:20px;width:320px;max-width:94vw;text-align:center;padding:28px 24px;box-shadow:0 16px 48px rgba(124,92,252,0.2);animation:mi .18s ease}
+.qr-modal-inner canvas{border-radius:12px;border:2px solid var(--border);display:block;margin:0 auto}
 
 /* Tabs */
 .tab-bar{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;padding:0 16px}
@@ -70,7 +75,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .cal-title{font-size:16px;font-weight:700;color:var(--text)}
 .cal-nav{background:var(--bg3);border:none;border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:18px;transition:all .15s}
 .cal-nav:hover{background:var(--bg4)}
-.cal-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.cal-card{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 2px 10px rgba(124,92,252,0.08)}
 .cal-wdays{display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg3);border-bottom:1px solid var(--border)}
 .cal-wd{text-align:center;font-size:11px;font-weight:600;color:var(--text3);padding:9px 0}
 .cal-wd:first-child{color:var(--red)}.cal-wd:last-child{color:var(--accent)}
@@ -88,7 +93,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .chip-late{background:var(--amber-bg);color:var(--amber)}
 
 .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
-.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center}
+.stat-box{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center;box-shadow:0 1px 6px rgba(124,92,252,0.07)}
 .stat-num{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1}
 .stat-lbl{font-size:11px;color:var(--text3);margin-top:4px}
 
@@ -98,7 +103,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .count-pill{font-size:12px;color:var(--text3);background:var(--bg3);padding:3px 12px;border-radius:20px;border:1px solid var(--border)}
 
 /* Table */
-.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:20px}
+.tbl-wrap{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:20px;box-shadow:0 2px 10px rgba(124,92,252,0.07)}
 table{width:100%;border-collapse:collapse}
 thead tr{background:var(--bg3)}
 th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;border-bottom:1px solid var(--border)}
@@ -131,7 +136,7 @@ tbody tr:hover{background:var(--bg3)}
 .form-group textarea{resize:vertical;min-height:90px}
 .form-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
 
-.ann-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:10px;transition:box-shadow .2s}
+.ann-card{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:10px;transition:box-shadow .2s;box-shadow:0 1px 6px rgba(124,92,252,0.07)}
 .ann-card.important{border-left:3px solid var(--red)}
 .ann-head-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
 .ann-title-text{font-size:14px;font-weight:600;color:var(--text);flex:1}
@@ -196,11 +201,10 @@ tbody tr:hover{background:var(--bg3)}
       </select>
     </div>
     <div class="fg">
-      <label>비밀번호 (6자리)</label>
-      <input type="tel" id="l-phone" placeholder="6자리 입력" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
+      <label>비밀번호</label>
+      <input type="tel" id="l-phone" placeholder="비밀번호 입력" maxlength="7" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="login-btn" onclick="doLogin()">로그인</button>
-    <p class="login-hint">전화번호 뒤 6자리 또는 마스터 키로 로그인합니다</p>
   </div>
 </div>
 
@@ -212,6 +216,7 @@ tbody tr:hover{background:var(--bg3)}
     <span class="hdr-name" id="h-name"></span>
     <span class="hdr-cls">강사</span>
     <div class="hdr-right">
+      <button class="qr-gen-btn" onclick="openQR()">📱 QR 생성</button>
       <button class="logout-btn" onclick="logout()">로그아웃</button>
     </div>
   </header>
@@ -342,8 +347,22 @@ tbody tr:hover{background:var(--bg3)}
   </div>
 </div>
 
+<!-- ── QR 생성 모달 ── -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="qr-modal-inner">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:16px;font-weight:700;color:var(--text)">📱 오늘의 출석 QR</div>
+      <button onclick="closeQR()" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;line-height:1">×</button>
+    </div>
+    <div id="qr-date-label" style="font-size:13px;color:var(--purple);font-weight:600;margin-bottom:16px"></div>
+    <canvas id="qr-canvas"></canvas>
+    <div style="font-size:11px;color:var(--text3);margin-top:14px;line-height:1.6">학생이 이 QR을 스캔하면<br>자동으로 출석이 기록됩니다</div>
+  </div>
+</div>
+
 <div class="toast" id="toast-ct"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
 // ── 상수 ──
 const BADGE_DEFS=[
@@ -376,6 +395,24 @@ function toast(msg,type='success'){
   setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300)},2400);
 }
 
+// ── QR 생성 ──
+function openQR(){
+  const now=new Date();
+  const yyyy=now.getFullYear();
+  const mm=String(now.getMonth()+1).padStart(2,'0');
+  const dd=String(now.getDate()).padStart(2,'0');
+  const dateKey=`${yyyy}${mm}${dd}`;
+  const qrData=`DSATT:${dateKey}`;
+  document.getElementById('qr-date-label').textContent=`${yyyy}년 ${mm}월 ${dd}일`;
+  document.getElementById('qr-modal').classList.add('open');
+  QRCode.toCanvas(document.getElementById('qr-canvas'),qrData,{
+    width:240,margin:2,color:{dark:'#1a2035',light:'#ffffff'}
+  },function(err){if(err)toast('QR 생성 오류','error');});
+}
+function closeQR(){
+  document.getElementById('qr-modal').classList.remove('open');
+}
+
 // ── 로그인 ──
 function initLogin(){
   const teachers=_l('teachers');
@@ -388,11 +425,11 @@ function doLogin(){
   const tId=document.getElementById('l-teacher').value;
   const phone=document.getElementById('l-phone').value.trim();
   if(!tId){toast('강사를 선택하세요','error');return;}
-  if(phone.length<6){toast('비밀번호 6자리를 입력하세요','error');return;}
+  if(phone.length<4){toast('비밀번호를 입력하세요','error');return;}
   const teacher=_l('teachers').find(t=>t.id===tId);
   if(!teacher){toast('강사 정보를 찾을 수 없습니다','error');return;}
   const tp=(teacher.phone||'').replace(/\D/g,'');
-  if(phone!=='008285'&&!tp.endsWith(phone)){toast('비밀번호가 일치하지 않습니다','error');return;}
+  if(phone!=='0082825'&&!tp.endsWith(phone)){toast('비밀번호가 일치하지 않습니다','error');return;}
   me=teacher;
   sessionStorage.setItem('ds_teacher_id',me.id);
   enterApp();
