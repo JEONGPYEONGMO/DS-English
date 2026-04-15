@@ -209,6 +209,17 @@ tbody tr:hover{background:var(--bg3)}
 .grade-B{color:#4f8ef7;font-weight:700}
 .grade-C{color:#c87a0d;font-weight:700}
 .grade-D{color:#d63850;font-weight:700}
+/* 시험 종류 관리 패널 */
+.exam-type-panel{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:14px;display:none}
+.exam-type-panel.open{display:block}
+.exam-type-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;min-height:32px}
+.exam-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;background:var(--bg3);border:1.5px solid var(--border);font-size:12px;font-weight:500;color:var(--text2)}
+.exam-chip.default-chip{background:var(--purple-bg);border-color:rgba(124,92,252,0.3);color:var(--purple)}
+.exam-chip-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:0;margin-left:2px}
+.exam-chip-del:hover{color:var(--red)}
+.exam-add-row{display:flex;gap:8px;align-items:center}
+.exam-add-inp{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:var(--font);outline:none}
+.exam-add-inp:focus{border-color:var(--purple)}
 /* 숙제 카드 */
 .hw-form{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:18px;display:none}
 .hw-form.open{display:block}
@@ -339,19 +350,26 @@ tbody tr:hover{background:var(--bg3)}
       <select id="grade-class-filter" style="font-size:13px;padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:var(--font)" onchange="renderGrades()">
         <option value="">전체</option>
       </select>
-      <select id="grade-exam-type" style="font-size:13px;padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:var(--font)" onchange="renderGrades()">
-        <option value="독해교재">독해교재평가</option>
-        <option value="문법교재">문법교재평가</option>
-        <option value="중간평가">중간평가</option>
-        <option value="단어시험">단어시험</option>
-        <option value="추가단어시험">추가단어시험</option>
-        <option value="모의고사">모의고사</option>
-        <option value="쓰기평가">쓰기평가(알파논술)</option>
-        <option value="기타시험">기타시험</option>
-      </select>
+      <select id="grade-exam-type" style="font-size:13px;padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:var(--font)" onchange="renderGrades()"></select>
+      <button class="btn btn-ghost btn-sm" onclick="toggleExamTypePanel()" title="시험 종류 추가·수정·삭제">✏️ 종류 편집</button>
       <input type="date" id="grade-date" style="font-size:12px;padding:5px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:var(--font)">
       <button class="btn btn-primary btn-sm ml-auto" onclick="saveGrades()">💾 저장</button>
     </div>
+
+    <!-- 시험 종류 관리 패널 -->
+    <div class="exam-type-panel" id="exam-type-panel">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">시험 종류 관리</div>
+      <div class="exam-type-chips" id="exam-type-chips"></div>
+      <div class="exam-add-row">
+        <input class="exam-add-inp" id="exam-add-inp" placeholder="새 시험 종류 입력 (예: 받아쓰기)" maxlength="20"
+               onkeydown="if(event.key==='Enter')addExamType()">
+        <button class="btn btn-primary btn-sm" onclick="addExamType()">+ 추가</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleExamTypePanel()">닫기</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">기본 종류는 삭제해도 초기화 버튼으로 복원할 수 있습니다.</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px;font-size:11px" onclick="resetExamTypes()">↺ 기본값으로 초기화</button>
+    </div>
+
     <div style="font-size:12px;color:var(--text3);margin-bottom:12px;background:var(--bg3);padding:8px 14px;border-radius:8px;border:1px solid var(--border)">
       📊 등급 기준 — A: 85~100점 &nbsp;·&nbsp; B: 70~84점 &nbsp;·&nbsp; C: 60~69점 &nbsp;·&nbsp; D: 60점 미만
     </div>
@@ -988,7 +1006,72 @@ function showTab(name){
 
 // ── 성적 관리 ──
 const GRADE_MAP={'A':92,'B':77,'C':65,'D':50};
-const EXAM_TYPES=['독해교재','문법교재','중간평가','단어시험','추가단어시험','모의고사','쓰기평가','기타시험'];
+const DEFAULT_EXAM_TYPES=['독해교재','문법교재','중간평가','단어시험','추가단어시험','모의고사','쓰기평가','기타시험'];
+
+function getExamTypes(){
+  const saved=_l('examTypes');
+  return saved.length?saved:[...DEFAULT_EXAM_TYPES];
+}
+function saveExamTypes(types){_s('examTypes',types);}
+
+function refreshExamTypeSelect(keepVal){
+  const sel=document.getElementById('grade-exam-type');
+  const prev=keepVal||sel.value;
+  const types=getExamTypes();
+  sel.innerHTML=types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  if(types.includes(prev))sel.value=prev;
+}
+
+function toggleExamTypePanel(){
+  const p=document.getElementById('exam-type-panel');
+  const isOpen=p.classList.toggle('open');
+  if(isOpen)renderExamTypeChips();
+}
+
+function renderExamTypeChips(){
+  const types=getExamTypes();
+  document.getElementById('exam-type-chips').innerHTML=types.map((t,i)=>`
+    <span class="exam-chip">
+      ${t}
+      <button class="exam-chip-del" onclick="deleteExamType(${i})" title="삭제">×</button>
+    </span>`).join('');
+}
+
+function addExamType(){
+  const inp=document.getElementById('exam-add-inp');
+  const val=inp.value.trim();
+  if(!val){inp.focus();return;}
+  const types=getExamTypes();
+  if(types.includes(val)){toast('이미 존재하는 시험 종류입니다','error');return;}
+  types.push(val);
+  saveExamTypes(types);
+  inp.value='';
+  refreshExamTypeSelect(val);
+  renderExamTypeChips();
+  renderGrades();
+  toast(`'${val}' 추가되었습니다`);
+}
+
+function deleteExamType(idx){
+  const types=getExamTypes();
+  const removed=types[idx];
+  if(!confirm(`'${removed}' 종류를 삭제하시겠습니까?\n(이미 입력된 성적 데이터는 유지됩니다)`))return;
+  types.splice(idx,1);
+  saveExamTypes(types.length?types:[...DEFAULT_EXAM_TYPES]);
+  refreshExamTypeSelect();
+  renderExamTypeChips();
+  renderGrades();
+  toast(`'${removed}' 삭제되었습니다`);
+}
+
+function resetExamTypes(){
+  if(!confirm('시험 종류를 기본값으로 초기화하시겠습니까?'))return;
+  saveExamTypes([...DEFAULT_EXAM_TYPES]);
+  refreshExamTypeSelect();
+  renderExamTypeChips();
+  renderGrades();
+  toast('기본값으로 초기화되었습니다');
+}
 
 function enterGrades(){
   const myCls=_l('classes').filter(c=>c.teacherId===me.id);
@@ -996,6 +1079,7 @@ function enterGrades(){
   cf.innerHTML='<option value="">전체</option>';
   myCls.forEach(c=>cf.innerHTML+=`<option value="${c.id}">${c.name}</option>`);
   document.getElementById('grade-date').value=todayStr();
+  refreshExamTypeSelect();
   renderGrades();
 }
 
