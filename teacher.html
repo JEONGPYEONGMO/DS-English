@@ -196,6 +196,8 @@ tbody tr:hover{background:var(--bg3)}
 .ab.ab-makeup{background:rgba(79,142,247,0.1);color:var(--accent);border-color:rgba(79,142,247,0.2)}
 .chip-makeup{background:rgba(79,142,247,0.1);color:var(--accent)}
 .dot-makeup{background:rgba(79,142,247,0.12);color:var(--accent)}
+.ab.ab-noclass{background:var(--bg3);color:var(--text3);border-color:var(--border)}
+.dot-noclass{background:var(--bg3);color:var(--text3);font-size:11px}
 /* 성적 관리 */
 .grade-tbl-wrap{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);overflow-x:auto;margin-bottom:20px}
 .grade-tbl{border-collapse:collapse;font-size:12px;white-space:nowrap;width:max-content;min-width:100%}
@@ -740,6 +742,7 @@ function renderStudents(){
         <button class="ab ab-late${st==='late'?' on':''}" onclick="setStuAtt('${s.id}','late',this,'${attDate}')">지각</button>
         <button class="ab ab-abs${st==='abs'?' on':''}" onclick="setStuAtt('${s.id}','abs',this,'${attDate}')">결석</button>
         <button class="ab ab-makeup${st==='makeup'?' on':''}" onclick="setStuAtt('${s.id}','makeup',this,'${attDate}')">보강</button>
+        <button class="ab ab-noclass${st==='noclass'?' on':''}" onclick="setStuAtt('${s.id}','noclass',this,'${attDate}')">수업없음</button>
       </div></td>
       <td>${badgeHtml||'-'}</td>
       <td style="white-space:nowrap">
@@ -981,6 +984,7 @@ function renderMonthlyAtt(){
       else if(st==='abs'){dot='<div class="mat-dot dot-abs">결</div>';bC++;}
       else if(st==='late'){dot='<div class="mat-dot dot-late">지</div>';lC++;}
       else if(st==='makeup'){dot='<div class="mat-dot dot-makeup">보</div>';mC++;}
+      else if(st==='noclass'){dot='<div class="mat-dot dot-noclass">─</div>';}
       row+=`<td class="mat-td">${dot}</td>`;
     }
     row+=`<td class="mat-td mat-stat" style="color:var(--green)">${aC}</td>`;

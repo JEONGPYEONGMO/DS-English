@@ -83,6 +83,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .chip-att{background:var(--green-bg);color:var(--green)}
 .chip-abs{background:var(--red-bg);color:var(--red)}
 .chip-late{background:var(--amber-bg);color:var(--amber)}
+.chip-noclass{background:var(--bg3);color:var(--text3)}
+.chip-makeup{background:rgba(79,142,247,0.1);color:var(--accent)}
+/* 숙제 카드 */
+.hw-card{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 5px rgba(26,158,106,0.07)}
+.hw-card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px}
+.hw-card-meta{font-size:11px;color:var(--text3);margin-bottom:10px;display:flex;gap:12px;flex-wrap:wrap}
+.hw-link-btn{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border-radius:10px;background:linear-gradient(135deg,var(--green),var(--accent));color:#fff;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;box-shadow:0 3px 10px rgba(26,158,106,0.25);font-family:var(--font);border:none}
 
 /* Stats */
 .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
@@ -214,6 +221,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-att-btn"      onclick="showTab('att')">📅 출결 현황</button>
     <button class="tab-btn"        id="tab-progress-btn" onclick="showTab('progress')">📈 학업 진도</button>
+    <button class="tab-btn"        id="tab-hw-btn"       onclick="showTab('hw')">📚 숙제</button>
     <button class="tab-btn"        id="tab-ann-btn"      onclick="showTab('ann')">📢 공지사항</button>
   </div>
 
@@ -263,6 +271,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
       <span class="sec-title">📝 평가 내역</span>
     </div>
     <div class="score-list" id="score-list"></div>
+  </div>
+
+  <!-- 숙제 탭 -->
+  <div id="tab-hw" class="content" style="display:none">
+    <div class="sec-header">
+      <span class="sec-title">📚 숙제 안내</span>
+      <span class="count-pill" id="hw-total">0개</span>
+    </div>
+    <div id="hw-list"></div>
   </div>
 
   <!-- 공지사항 탭 -->
@@ -395,6 +412,8 @@ function renderCalendar(){
     if(st==='att'){chip='<span class="status-chip chip-att">출석</span>';attC++;total++;}
     else if(st==='abs'){chip='<span class="status-chip chip-abs">결석</span>';absC++;total++;}
     else if(st==='late'){chip='<span class="status-chip chip-late">지각</span>';lateC++;total++;}
+    else if(st==='makeup'){chip='<span class="status-chip chip-makeup">보강</span>';attC++;total++;}
+    else if(st==='noclass'){chip='<span class="status-chip chip-noclass">수업없음</span>';}
     html+=`<div class="${cls}"><div class="cal-day-num">${d}</div>${chip}</div>`;
   }
   const rem=(firstDow+dim)%7===0?0:7-(firstDow+dim)%7;
@@ -564,12 +583,37 @@ function renderMsgs(){
 
 // ── 탭 전환 ──
 function showTab(name){
-  ['att','progress','ann'].forEach(t=>{
+  ['att','progress','hw','ann'].forEach(t=>{
     document.getElementById('tab-'+t).style.display=t===name?'':'none';
     document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===name);
   });
   if(name==='progress')renderProgress();
+  if(name==='hw')renderHomework();
   if(name==='ann')renderAnn();
+}
+
+// ── 숙제 ──
+function renderHomework(){
+  if(!me)return;
+  const hw=_l('homework').filter(h=>h.classId==='all'||h.classId===me.classId);
+  document.getElementById('hw-total').textContent=hw.length+'개';
+  const list=document.getElementById('hw-list');
+  if(!hw.length){
+    list.innerHTML='<div class="empty-state"><span class="empty-icon">📚</span><div class="empty-text">등록된 숙제가 없습니다<br>선생님이 숙제를 등록하면 여기에 표시됩니다</div></div>';
+    return;
+  }
+  list.innerHTML=[...hw].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(h=>{
+    const isOverdue=h.dueDate&&h.dueDate<new Date().toISOString().split('T')[0];
+    return '<div class="hw-card">'
+      +'<div class="hw-card-title">'+h.title+'</div>'
+      +'<div class="hw-card-meta">'
+      +'<span>📅 등록: '+(h.date||'')+'</span>'
+      +(h.dueDate?'<span style="color:'+(isOverdue?'var(--red)':'var(--text3)')+'">⏰ 마감: '+h.dueDate+(isOverdue?' (기한 지남)':'')+'</span>':'')
+      +'</div>'
+      +(h.desc?'<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:10px">'+h.desc+'</div>':'')
+      +(h.url?'<a class="hw-link-btn" href="'+h.url+'" target="_blank">📖 숙제 바로 하기</a>':'<span style="font-size:12px;color:var(--text3)">링크 없음</span>')
+      +'</div>';
+  }).join('');
 }
 
 // ── 초기화 ──

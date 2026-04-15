@@ -76,6 +76,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .chip-att{background:var(--green-bg);color:var(--green)}
 .chip-abs{background:var(--red-bg);color:var(--red)}
 .chip-late{background:var(--amber-bg);color:var(--amber)}
+.chip-noclass{background:var(--bg3);color:var(--text3)}
+.chip-makeup{background:rgba(79,142,247,0.1);color:var(--accent)}
 
 /* Stats */
 .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
@@ -491,6 +493,8 @@ function renderCalendar(){
     if(st==='att'){chip='<span class="status-chip chip-att">출석</span>';attC++;total++;}
     else if(st==='abs'){chip='<span class="status-chip chip-abs">결석</span>';absC++;total++;}
     else if(st==='late'){chip='<span class="status-chip chip-late">지각</span>';lateC++;total++;}
+    else if(st==='makeup'){chip='<span class="status-chip chip-makeup">보강</span>';attC++;total++;}
+    else if(st==='noclass'){chip='<span class="status-chip chip-noclass">수업없음</span>';}
     html+=`<div class="${cls}"><div class="cal-day-num">${d}</div>${chip}</div>`;
   }
   const rem=(firstDow+dim)%7===0?0:7-(firstDow+dim)%7;
