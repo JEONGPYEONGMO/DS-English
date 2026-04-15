@@ -122,7 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .cam-guide-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;pointer-events:none}
 .cam-frame{width:200px;height:200px;border:3px solid rgba(255,255,255,0.9);border-radius:16px;box-shadow:0 0 0 2000px rgba(0,0,0,0.45)}
 .cam-guide-txt{color:#fff;font-size:13px;font-weight:500;text-shadow:0 1px 4px rgba(0,0,0,0.8);background:rgba(0,0,0,0.4);padding:5px 14px;border-radius:20px}
-.cam-status{padding:12px 18px;text-align:center;font-size:13px;color:#aaa;background:rgba(20,20,20,0.95);min-height:42px}
+.cam-status{padding:12px 18px;text-align:center;font-size:13px;color:#aaa;background:rgba(20,20,20,0.95);min-height:42px;white-space:pre-line;line-height:1.6}
 
 /* QR 출석 버튼 (헤더용 소형 - 미사용) */
 .qr-btn-sm{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all .15s}
@@ -542,6 +542,13 @@ let camStream=null, scanRaf=null;
 
 function openCamera(){
   if(!me){toast('로그인 후 사용하세요','error');return;}
+  // HTTPS / localhost 환경 체크
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    const modal=document.getElementById('cam-modal');
+    modal.classList.add('open');
+    document.getElementById('cam-status').textContent='⚠️ 카메라 사용 불가 — HTTPS 환경에서만 지원됩니다.\n(파일을 직접 열면 카메라를 사용할 수 없습니다)';
+    return;
+  }
   const modal=document.getElementById('cam-modal');
   modal.classList.add('open');
   document.getElementById('cam-status').textContent='카메라 시작 중...';
@@ -550,12 +557,23 @@ function openCamera(){
     .then(stream=>{
       camStream=stream;
       video.srcObject=stream;
-      video.onloadedmetadata=()=>{video.play();scanRaf=requestAnimationFrame(scanFrame);};
-      document.getElementById('cam-status').textContent='QR 코드를 화면에 비춰주세요';
+      const startScan=()=>{video.play().catch(()=>{});scanRaf=requestAnimationFrame(scanFrame);document.getElementById('cam-status').textContent='QR 코드를 화면에 비춰주세요';};
+      video.onloadedmetadata=startScan;
+      // 일부 브라우저에서 onloadedmetadata 미발생 대비
+      setTimeout(()=>{if(!scanRaf&&camStream)startScan();},1500);
     })
-    .catch(()=>{
-      toast('카메라를 사용할 수 없습니다','error');
-      closeCamera();
+    .catch(err=>{
+      let msg='카메라를 사용할 수 없습니다';
+      if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError')
+        msg='카메라 권한이 거부되었습니다.\n브라우저 주소창 옆 🔒 아이콘 → 카메라 권한 허용 후 다시 시도하세요.';
+      else if(err.name==='NotFoundError')
+        msg='카메라를 찾을 수 없습니다.\n카메라가 연결되어 있는지 확인해주세요.';
+      else if(err.name==='NotReadableError')
+        msg='카메라가 다른 앱에서 사용 중입니다.\n다른 앱을 닫고 다시 시도해주세요.';
+      else if(err.name==='OverconstrainedError')
+        msg='카메라 설정 오류입니다. 다시 시도해주세요.';
+      document.getElementById('cam-status').textContent='❌ '+msg;
+      toast('카메라 오류: '+err.name,'error');
     });
 }
 
