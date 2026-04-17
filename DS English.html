@@ -1350,105 +1350,130 @@ function openLearningTool(){
     // 강사
     const t1=uid(),t2=uid();
     DB.teachers=[
-      {id:t1,name:'이선생',phone:'010-1111-2222',subjects:'영어 독해, 문법',hire:'2023-03-01',salary:300,contract:'정규직',memo:'T5반·T3반 담당'},
-      {id:t2,name:'박선생',phone:'010-3333-4444',subjects:'영어 회화, 수능',hire:'2022-09-01',salary:320,contract:'정규직',memo:'T2반·수능대비반·3반 담당'}
+      {id:t1,name:'이선생',phone:'010-1111-2222',subjects:'영어 독해, 문법',hire:'2023-03-01',salary:300,contract:'정규직',memo:''},
+      {id:t2,name:'박선생',phone:'010-3333-4444',subjects:'영어 회화, 수능',hire:'2022-09-01',salary:320,contract:'정규직',memo:''}
     ];
-    // 수업
-    const cT5=uid(),cT3=uid(),cT2=uid(),cSAT=uid(),c3r=uid();
+    // 수업 (2026-04-17 기준)
+    const cT1=uid(),cT2=uid(),cT3=uid(),cT4=uid(),cT5=uid();
+    const c1=uid(),c3=uid(),cF2=uid(),cF4=uid(),cF7=uid(),cFP9=uid();
+    const cM1b=uid(),cM2a=uid(),cM7a=uid(),cSong=uid();
+    const cMJb=uid(),cMJc=uid(),cMJr=uid();
     DB.classes=[
-      {id:cT5,name:'T5반',level:'고급',teacherId:t1,schedule:'월·수·금 오후 5시',max:10,textbook:''},
-      {id:cT3,name:'T3반',level:'중급',teacherId:t1,schedule:'화·목 오후 5시',max:6,textbook:''},
-      {id:cT2,name:'T2반',level:'초급',teacherId:t2,schedule:'월·수 오후 4시',max:6,textbook:''},
-      {id:cSAT,name:'수능대비반',level:'특급',teacherId:t2,schedule:'월~금 오후 7시',max:5,textbook:''},
-      {id:c3r,name:'3반',level:'초급',teacherId:t2,schedule:'화·목 오후 3시',max:5,textbook:''}
+      {id:cT1,name:'T1',level:'초급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cT2,name:'T2',level:'초급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cT3,name:'T3',level:'중급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cT4,name:'T4',level:'중급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cT5,name:'T5',level:'고급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:c1,name:'1',level:'초급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:c3,name:'3',level:'초급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cF2,name:'F2',level:'초급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cF4,name:'F4',level:'초급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cF7,name:'F7',level:'초급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cFP9,name:'FP9',level:'초급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cM1b,name:'M1 리딩 b',level:'중급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cM2a,name:'M2 리딩 a',level:'중급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cM7a,name:'M7 리딩 a',level:'중급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cSong,name:'song',level:'입문',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cMJb,name:'중등대비 b',level:'중급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cMJc,name:'중등대비 c',level:'중급',teacherId:'',schedule:'',max:10,textbook:''},
+      {id:cMJr,name:'7시 중등리딩',level:'중급',teacherId:'',schedule:'',max:10,textbook:''}
     ];
-    // 학생 (학원 관리.png 데이터 기준)
-    const s1=uid(),s2=uid(),s3=uid(),s4=uid(),s5=uid(),s6=uid(),s7=uid(),s8=uid();
-    const s9=uid(),s10=uid(),s11=uid(),s12=uid(),s13=uid(),s14=uid(),s15=uid(),s16=uid();
+    // 학생 (2026-04-17 기준, 총 61명)
     DB.students=[
-      // T5반
-      {id:s1,name:'강훈',level:'고급',phone:'010-4922-3857',parent:'010-4922-3857',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 강예준'},
-      {id:s2,name:'강예준',level:'고급',phone:'010-4922-3857',parent:'010-4922-3857',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 강훈'},
-      {id:s3,name:'강현서',level:'고급',phone:'010-9885-7222',parent:'010-9885-7222',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 강현준'},
-      {id:s4,name:'강현준',level:'고급',phone:'010-9885-7222',parent:'010-9885-7222',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 강현서'},
-      {id:s5,name:'고윤우',level:'고급',phone:'010-9881-8549',parent:'010-9881-8549',classId:cT5,date:'2025-03-01',status:'재원',memo:''},
-      {id:s6,name:'권수아',level:'고급',phone:'010-7174-9729',parent:'010-7174-9729',classId:cT5,date:'2025-03-01',status:'재원',memo:''},
-      {id:s7,name:'김가원',level:'고급',phone:'010-5225-1773',parent:'010-5225-1773',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 김규현'},
-      {id:s8,name:'김규현',level:'고급',phone:'010-5225-1773',parent:'010-5225-1773',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 김가원'},
-      // 수능대비반
-      {id:s9,name:'김규원',level:'특급',phone:'010-8642-9852',parent:'010-8642-9852',classId:cSAT,date:'2025-03-01',status:'재원',memo:'형제: 김도우'},
-      {id:s10,name:'김도우',level:'특급',phone:'010-8642-9852',parent:'010-8642-9852',classId:cSAT,date:'2025-03-01',status:'재원',memo:'형제: 김규원'},
-      // T3반
-      {id:s11,name:'김도영',level:'중급',phone:'010-4760-5149',parent:'010-4760-5149',classId:cT3,date:'2025-03-01',status:'재원',memo:''},
-      {id:s12,name:'김민찬',level:'중급',phone:'010-3771-9286',parent:'010-3771-9286',classId:cT3,date:'2025-03-01',status:'재원',memo:''},
-      // T2반
-      {id:s13,name:'김서이',level:'초급',phone:'010-3395-7957',parent:'010-3395-7957',classId:cT2,date:'2025-03-01',status:'재원',memo:''},
-      {id:s14,name:'김소정',level:'초급',phone:'010-4741-1957',parent:'010-4741-1957',classId:cT2,date:'2025-03-01',status:'재원',memo:''},
-      // 3반
-      {id:s15,name:'김예슬',level:'초급',phone:'010-4557-7972',parent:'010-4557-7972',classId:c3r,date:'2025-03-01',status:'재원',memo:''},
-      {id:s16,name:'김주원',level:'초급',phone:'010-8559-6250',parent:'010-8559-6250',classId:c3r,date:'2025-03-01',status:'재원',memo:''}
+      // 미배정
+      {id:uid(),name:'강율',level:'입문',phone:'010-4922-3857',parent:'010-4922-3857',classId:'',date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'강예준',level:'입문',phone:'010-4922-3857',parent:'010-4922-3857',classId:'',date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'강현준',level:'입문',phone:'010-9885-7222',parent:'010-9885-7222',classId:'',date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'고윤우',level:'입문',phone:'010-9881-8549',parent:'010-9881-8549',classId:'',date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'권수아',level:'입문',phone:'010-7174-9729',parent:'010-7174-9729',classId:'',date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'김가원',level:'입문',phone:'010-5225-1773',parent:'010-5225-1773',classId:'',date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'김규현',level:'입문',phone:'010-5225-1773',parent:'010-5225-1773',classId:'',date:'2026-04-17',status:'재원',memo:''},
+      // 중등대비 c
+      {id:uid(),name:'김규원',level:'중급',phone:'010-8642-9852',parent:'010-8642-9852',classId:cMJc,date:'2026-04-17',status:'재원',memo:''},
+      // T3
+      {id:uid(),name:'김도우',level:'중급',phone:'010-8642-9852',parent:'010-8642-9852',classId:cT3,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'김도영',level:'중급',phone:'010-4760-5149',parent:'010-4760-5149',classId:cT3,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'김민찬',level:'중급',phone:'010-3771-9286',parent:'010-3771-9286',classId:cT3,date:'2026-04-17',status:'재원',memo:''},
+      // T2
+      {id:uid(),name:'김서이',level:'초급',phone:'010-3395-7957',parent:'010-3395-7957',classId:cT2,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'김소정',level:'초급',phone:'010-4741-1957',parent:'010-4741-1957',classId:cT2,date:'2026-04-17',status:'재원',memo:''},
+      // 3
+      {id:uid(),name:'김예슬',level:'초급',phone:'010-4557-7972',parent:'010-4557-7972',classId:c3,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'김주원',level:'초급',phone:'010-8559-6250',parent:'010-8559-6250',classId:c3,date:'2026-04-17',status:'재원',memo:''},
+      // T5
+      {id:uid(),name:'김주성',level:'고급',phone:'010-5068-1857',parent:'010-5068-1857',classId:cT5,date:'2026-04-17',status:'재원',memo:''},
+      // M1 리딩 b
+      {id:uid(),name:'김지성',level:'중급',phone:'010-5068-1857',parent:'010-5068-1857',classId:cM1b,date:'2026-04-17',status:'재원',memo:'중3'},
+      // F7
+      {id:uid(),name:'김지율',level:'초급',phone:'010-4542-0240',parent:'010-4542-0240',classId:cF7,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'김서윤',level:'초급',phone:'010-4542-0240',parent:'010-4542-0240',classId:cF7,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'김찬중',level:'초급',phone:'010-8399-1500',parent:'010-8399-1500',classId:cF7,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'문찬빈',level:'초급',phone:'010-9496-1734',parent:'010-9496-1734',classId:cF7,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'박선율',level:'초급',phone:'010-7192-8856',parent:'010-7192-8856',classId:cF7,date:'2026-04-17',status:'재원',memo:''},
+      // 중등대비 b
+      {id:uid(),name:'박세빛',level:'중급',phone:'010-2750-1884',parent:'010-2750-1884',classId:cMJb,date:'2026-04-17',status:'재원',memo:''},
+      // FP9
+      {id:uid(),name:'박예빛',level:'초급',phone:'010-2750-1884',parent:'010-2750-1884',classId:cFP9,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'박수민',level:'초급',phone:'010-8524-2665',parent:'010-8524-2665',classId:cFP9,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'박시연',level:'초급',phone:'010-8820-7759',parent:'010-8820-7759',classId:cFP9,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'박시윤',level:'초급',phone:'010-7171-9660',parent:'010-7171-9660',classId:cFP9,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'박재희',level:'초급',phone:'010-8010-9963',parent:'010-8010-9963',classId:cFP9,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'박현서',level:'초급',phone:'010-4194-8209',parent:'010-4194-8209',classId:cFP9,date:'2026-04-17',status:'재원',memo:''},
+      // T1
+      {id:uid(),name:'안리현',level:'초급',phone:'010-6649-6424',parent:'010-6649-6424',classId:cT1,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'안현준',level:'초급',phone:'010-3784-9869',parent:'010-3784-9869',classId:cT1,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'안예준',level:'초급',phone:'010-3784-9869',parent:'010-3784-9869',classId:cT1,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'양기원',level:'초급',phone:'010-5100-5694',parent:'010-5100-5694',classId:cT1,date:'2026-04-17',status:'재원',memo:''},
+      // F2
+      {id:uid(),name:'양가은',level:'초급',phone:'010-5100-5694',parent:'010-5100-5694',classId:cF2,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'오 윤',level:'초급',phone:'010-7111-6709',parent:'010-7111-6709',classId:cF2,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'윤성현',level:'초급',phone:'010-4708-3614',parent:'010-4708-3614',classId:cF2,date:'2026-04-17',status:'재원',memo:''},
+      // 7시 중등리딩
+      {id:uid(),name:'이명하',level:'중급',phone:'010-2780-4934',parent:'010-2780-4934',classId:cMJr,date:'2026-04-17',status:'재원',memo:'중3'},
+      // M2 리딩 a
+      {id:uid(),name:'이승하',level:'중급',phone:'010-2780-4934',parent:'010-2780-4934',classId:cM2a,date:'2026-04-17',status:'재원',memo:'중3'},
+      {id:uid(),name:'이보미',level:'중급',phone:'010-4591-2454',parent:'010-4591-2454',classId:cM2a,date:'2026-04-17',status:'재원',memo:''},
+      // song
+      {id:uid(),name:'이원희',level:'입문',phone:'010-7143-3625',parent:'010-7143-3625',classId:cSong,date:'2026-04-17',status:'재원',memo:''},
+      // F4
+      {id:uid(),name:'이지아',level:'초급',phone:'010-3377-4976',parent:'010-3377-4976',classId:cF4,date:'2026-04-17',status:'재원',memo:''},
+      // 1
+      {id:uid(),name:'이지오',level:'초급',phone:'010-7445-2602',parent:'010-7445-2602',classId:c1,date:'2026-04-17',status:'재원',memo:''},
+      // M7 리딩 a
+      {id:uid(),name:'이지호',level:'중급',phone:'010-7100-5179',parent:'010-7100-5179',classId:cM7a,date:'2026-04-17',status:'재원',memo:''},
+      // F4
+      {id:uid(),name:'이우찬',level:'초급',phone:'010-7100-5179',parent:'010-7100-5179',classId:cF4,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'이민준',level:'초급',phone:'010-7100-5179',parent:'010-7100-5179',classId:cF4,date:'2026-04-17',status:'재원',memo:''},
+      // song
+      {id:uid(),name:'임채환',level:'입문',phone:'010-4749-6563',parent:'010-4749-6563',classId:cSong,date:'2026-04-17',status:'재원',memo:'중1'},
+      // T3
+      {id:uid(),name:'임현균',level:'중급',phone:'010-9164-2242',parent:'010-9164-2242',classId:cT3,date:'2026-04-17',status:'재원',memo:''},
+      // F2
+      {id:uid(),name:'정동건',level:'초급',phone:'010-6318-6910',parent:'010-6318-6910',classId:cF2,date:'2026-04-17',status:'재원',memo:''},
+      // song
+      {id:uid(),name:'정승아',level:'입문',phone:'010-7602-6119',parent:'010-7602-6119',classId:cSong,date:'2026-04-17',status:'재원',memo:''},
+      // T4
+      {id:uid(),name:'정현주',level:'중급',phone:'010-6658-9564',parent:'010-6658-9564',classId:cT4,date:'2026-04-17',status:'재원',memo:''},
+      // song
+      {id:uid(),name:'조우진',level:'입문',phone:'010-4569-1504',parent:'010-4569-1504',classId:cSong,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'최가은',level:'입문',phone:'010-9658-4292',parent:'010-9658-4292',classId:cSong,date:'2026-04-17',status:'재원',memo:''},
+      // F7
+      {id:uid(),name:'최민우',level:'초급',phone:'010-7736-9688',parent:'010-7736-9688',classId:cF7,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'최준우',level:'초급',phone:'010-7736-9688',parent:'010-7736-9688',classId:cF7,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'최민우a',level:'초급',phone:'010-7174-4892',parent:'010-7174-4892',classId:cF7,date:'2026-04-17',status:'재원',memo:''},
+      // F4
+      {id:uid(),name:'탁서준',level:'초급',phone:'010-9222-1960',parent:'010-9222-1960',classId:cF4,date:'2026-04-17',status:'재원',memo:''},
+      // song
+      {id:uid(),name:'한송연',level:'고급',phone:'010-9275-4846',parent:'010-9275-4846',classId:cSong,date:'2026-04-17',status:'재원',memo:'고1'},
+      {id:uid(),name:'한여름',level:'입문',phone:'010-5414-3039',parent:'010-5414-3039',classId:cSong,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'허윤주',level:'입문',phone:'010-8606-3712',parent:'010-8606-3712',classId:cSong,date:'2026-04-17',status:'재원',memo:''},
+      {id:uid(),name:'허윤선',level:'입문',phone:'010-8606-3712',parent:'010-8606-3712',classId:cSong,date:'2026-04-17',status:'재원',memo:''},
+      // T2
+      {id:uid(),name:'황지후',level:'초급',phone:'010-6750-3856',parent:'010-6750-3856',classId:cT2,date:'2026-04-17',status:'재원',memo:''}
     ];
-    // 원비 (2026년 3월 기준, 단위: 만원)
-    DB.fees=[
-      {id:uid(),studentId:s1,month:'2026-03',amount:27,status:'미납',paidDate:''},
-      {id:uid(),studentId:s2,month:'2026-03',amount:27,status:'미납',paidDate:''},
-      {id:uid(),studentId:s3,month:'2026-03',amount:27,status:'미납',paidDate:''},
-      {id:uid(),studentId:s4,month:'2026-03',amount:28,status:'납부완료',paidDate:'2026-03-23'},
-      {id:uid(),studentId:s5,month:'2026-03',amount:28,status:'납부완료',paidDate:'2026-03-20'},
-      {id:uid(),studentId:s6,month:'2026-03',amount:28,status:'납부완료',paidDate:'2026-03-20'},
-      {id:uid(),studentId:s7,month:'2026-03',amount:28,status:'납부완료',paidDate:'2026-03-24'},
-      {id:uid(),studentId:s8,month:'2026-03',amount:26,status:'납부완료',paidDate:'2026-03-24'},
-      {id:uid(),studentId:s9,month:'2026-03',amount:29,status:'미납',paidDate:''},
-      {id:uid(),studentId:s10,month:'2026-03',amount:28,status:'미납',paidDate:''},
-      {id:uid(),studentId:s11,month:'2026-03',amount:23,status:'납부완료',paidDate:'2026-03-23'},
-      {id:uid(),studentId:s12,month:'2026-03',amount:27,status:'납부완료',paidDate:'2026-03-05'},
-      {id:uid(),studentId:s13,month:'2026-03',amount:30,status:'납부완료',paidDate:'2026-03-25'},
-      {id:uid(),studentId:s14,month:'2026-03',amount:30,status:'미납',paidDate:''},
-      {id:uid(),studentId:s15,month:'2026-03',amount:28,status:'납부완료',paidDate:'2026-03-25'},
-      {id:uid(),studentId:s16,month:'2026-03',amount:27,status:'미납',paidDate:''}
-    ];
-    // 성적 (3월 월말 평가)
-    DB.scores=[
-      {id:uid(),studentId:s1,name:'3월 월말 평가',date:'2026-03-28',score:82,memo:''},
-      {id:uid(),studentId:s2,name:'3월 월말 평가',date:'2026-03-28',score:88,memo:''},
-      {id:uid(),studentId:s3,name:'3월 월말 평가',date:'2026-03-28',score:76,memo:''},
-      {id:uid(),studentId:s4,name:'3월 월말 평가',date:'2026-03-28',score:91,memo:''},
-      {id:uid(),studentId:s5,name:'3월 월말 평가',date:'2026-03-28',score:85,memo:''},
-      {id:uid(),studentId:s6,name:'3월 월말 평가',date:'2026-03-28',score:79,memo:''},
-      {id:uid(),studentId:s7,name:'3월 월말 평가',date:'2026-03-28',score:93,memo:''},
-      {id:uid(),studentId:s8,name:'3월 월말 평가',date:'2026-03-28',score:88,memo:''},
-      {id:uid(),studentId:s9,name:'3월 모의고사',date:'2026-03-28',score:94,memo:''},
-      {id:uid(),studentId:s10,name:'3월 모의고사',date:'2026-03-28',score:87,memo:''},
-      {id:uid(),studentId:s11,name:'3월 월말 평가',date:'2026-03-28',score:74,memo:''},
-      {id:uid(),studentId:s12,name:'3월 월말 평가',date:'2026-03-28',score:81,memo:''},
-      {id:uid(),studentId:s13,name:'3월 월말 평가',date:'2026-03-28',score:68,memo:''},
-      {id:uid(),studentId:s14,name:'3월 월말 평가',date:'2026-03-28',score:72,memo:''},
-      {id:uid(),studentId:s15,name:'3월 월말 평가',date:'2026-03-28',score:77,memo:''},
-      {id:uid(),studentId:s16,name:'3월 월말 평가',date:'2026-03-28',score:83,memo:''}
-    ];
-    // 출결 (오늘 기준 샘플)
-    const att={};const td=todayStr();att[dKey(td)]={};
-    [s1,s2,s4,s5,s7,s9,s11,s12,s13,s15].forEach(s=>att[dKey(td)][s]='att');
-    att[dKey(td)][s3]='late';att[dKey(td)][s6]='late';
-    att[dKey(td)][s8]='abs';att[dKey(td)][s10]='abs';att[dKey(td)][s14]='abs';
-    att[dKey(td)][s16]='att';
-    DB.att=att;
-    // 샘플 배지
-    DB.studentBadges=[
-      {id:uid(),studentId:s1,badgeId:'b1',teacherId:t1,date:'2026-03-31',note:'3월 개근'},
-      {id:uid(),studentId:s4,badgeId:'b2',teacherId:t1,date:'2026-03-28',note:'월말평가 91점'},
-      {id:uid(),studentId:s7,badgeId:'b2',teacherId:t1,date:'2026-03-28',note:'월말평가 93점'},
-      {id:uid(),studentId:s9,badgeId:'b2',teacherId:t2,date:'2026-03-28',note:'모의고사 94점'},
-      {id:uid(),studentId:s5,badgeId:'b1',teacherId:t1,date:'2026-03-31',note:'3월 개근'},
-      {id:uid(),studentId:s6,badgeId:'b4',teacherId:t1,date:'2026-03-28',note:'수업 태도 우수'},
-      {id:uid(),studentId:s12,badgeId:'b3',teacherId:t1,date:'2026-03-28',note:'성적 10점 향상'},
-      {id:uid(),studentId:s13,badgeId:'b6',teacherId:t2,date:'2026-03-28',note:'집중력 칭찬'},
-    ];
-    // 샘플 공지사항
+    DB.fees=[];DB.scores=[];DB.att={};DB.studentBadges=[];
     DB.announcements=[
-      {id:uid(),title:'4월 수업 일정 안내',content:'안녕하세요. 4월 수업 일정을 안내드립니다.\n\n- 4월 5일(일): 공휴일로 수업 없음\n- 4월 중간고사 대비 특강은 별도 안내 예정입니다.\n\n문의사항은 학원으로 연락 주세요.',date:'2026-04-01',teacherId:t1,targetClass:'all',important:true},
-      {id:uid(),title:'T5반 교재 변경 안내',content:'4월부터 T5반의 교재가 변경됩니다.\n새 교재: Advanced Grammar in Use (3rd Edition)\n첫 수업 시 배부 예정이오니 별도 구매하지 마세요.',date:'2026-04-02',teacherId:t1,targetClass:cT5,important:false},
-      {id:uid(),title:'3월 원비 미납 안내',content:'3월 원비가 아직 미납된 학생이 있습니다.\n빠른 시일 내에 납부 부탁드립니다.\n\n계좌: 신한은행 110-123-456789 DS English',date:'2026-04-03',teacherId:t2,targetClass:'all',important:true},
+      {id:uid(),title:'4월 수업 일정 안내',content:'안녕하세요. 4월 수업 일정을 안내드립니다.\n\n문의사항은 학원으로 연락 주세요.',date:'2026-04-17',teacherId:t1,targetClass:'all',important:true},
     ];
   }
   updateFeeBadge();renderDashboard();
