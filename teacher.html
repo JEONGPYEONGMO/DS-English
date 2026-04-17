@@ -236,6 +236,22 @@ tbody tr:hover{background:var(--bg3)}
 .tchat-card{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:8px}
 .tchat-mine{border-left:3px solid var(--purple)}
 .tchat-other{border-left:3px solid var(--accent)}
+/* ── Mobile ── */
+@media(max-width:767px){
+  .tab-bar{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 10px;scrollbar-width:none}
+  .tab-bar::-webkit-scrollbar{height:0}
+  .tab-btn{padding:11px 12px;font-size:12px}
+  .content{padding:14px}
+  .app-header{padding:0 14px;gap:6px}
+  .hdr-brand{display:none}
+  .stat-row{grid-template-columns:repeat(2,1fr)}
+  .tbl-wrap{overflow-x:auto}
+  .month-att-wrap{overflow-x:auto}
+  .form-grid{grid-template-columns:1fr}
+  .form-group.span2{grid-column:span 1}
+  .modal{width:94vw;max-width:94vw}
+  .toast{right:10px;bottom:10px}
+}
 </style>
 </head>
 <body>
@@ -379,6 +395,7 @@ tbody tr:hover{background:var(--bg3)}
       <table class="grade-tbl">
         <thead><tr>
           <th class="grade-th sname">이름</th>
+          <th class="grade-th">영역</th>
           <th class="grade-th">등급</th>
           <th class="grade-th" style="min-width:110px">메모</th>
           <th class="grade-th">기존 성적</th>
@@ -544,6 +561,17 @@ tbody tr:hover{background:var(--bg3)}
 
 <div class="toast" id="toast-ct"></div>
 
+<!-- Firebase 로딩 오버레이 -->
+<div id="fb-loading" style="position:fixed;inset:0;background:rgba(234,239,255,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px">
+  <div style="width:44px;height:44px;border:4px solid #b8c6f0;border-top-color:#4f8ef7;border-radius:50%;animation:fb-spin 0.8s linear infinite"></div>
+  <div style="font-size:15px;font-weight:600;color:#4a5577">데이터 연결 중...</div>
+  <style>@keyframes fb-spin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
 // ── 상수 ──
@@ -555,11 +583,6 @@ const BADGE_DEFS=[
   {id:'b5',name:'친절상',icon:'🌈',color:'#7c5cfc',bg:'rgba(124,92,252,0.12)',desc:'친구 배려 칭찬'},
   {id:'b6',name:'집중상',icon:'🎯',color:'#0891b2',bg:'rgba(8,145,178,0.12)',desc:'수업 집중력 우수'},
 ];
-
-function _l(k){try{return JSON.parse(localStorage.getItem('ds_'+k)||'[]')}catch{return[]}}
-function _lo(k){try{return JSON.parse(localStorage.getItem('ds_'+k)||'{}')}catch{return{}}}
-function _s(k,v){localStorage.setItem('ds_'+k,JSON.stringify(v))}
-function _so(k,v){localStorage.setItem('ds_'+k,JSON.stringify(v))}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
 function todayStr(){return new Date().toISOString().split('T')[0]}
 
@@ -1111,7 +1134,7 @@ function renderGrades(){
   const classes=_l('classes');
   const tb=document.getElementById('grade-body');
   if(!students.length){
-    tb.innerHTML=`<tr><td colspan="4" class="grade-td" style="padding:20px;text-align:center;color:var(--text3)">학생이 없습니다</td></tr>`;
+    tb.innerHTML=`<tr><td colspan="5" class="grade-td" style="padding:20px;text-align:center;color:var(--text3)">학생이 없습니다</td></tr>`;
     return;
   }
   tb.innerHTML=students.map(s=>{
@@ -1119,9 +1142,17 @@ function renderGrades(){
     const existing=allScores.filter(sc=>sc.studentId===s.id&&sc.name===examType).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     const lastScore=existing[0];
     const lastGrade=lastScore?(lastScore.grade||gradeFromScore(lastScore.score)):'';
-    const lastLabel=lastScore?`${lastScore.date||''} ${lastGrade}`:'없음';
+    const lastLabel=lastScore?`${lastScore.date||''}${lastScore.domain?' ['+lastScore.domain+']':''} ${lastGrade}`:'없음';
     return `<tr>
       <td class="grade-td sname">${s.name}<br><span style="font-size:10px;color:var(--text3)">${cls?cls.name:''}</span></td>
+      <td class="grade-td">
+        <select class="grade-sel" id="gd-${s.id}" style="width:52px">
+          <option value="독해">독해</option>
+          <option value="어휘">어휘</option>
+          <option value="문법">문법</option>
+          <option value="쓰기">쓰기</option>
+        </select>
+      </td>
       <td class="grade-td">
         <select class="grade-sel" id="g-${s.id}" onchange="updateGradeColor('${s.id}')">
           <option value="">-</option>
@@ -1161,13 +1192,15 @@ function saveGrades(){
   let saved=0;
   students.forEach(s=>{
     const sel=document.getElementById('g-'+s.id);
+    const dsel=document.getElementById('gd-'+s.id);
     const memo=document.getElementById('gm-'+s.id);
     if(!sel||!sel.value)return;
     const grade=sel.value;
     const score=GRADE_MAP[grade]||0;
-    // 같은 날짜+시험 기존 레코드 제거 후 추가
-    const idx=SC.findIndex(sc=>sc.studentId===s.id&&sc.name===examType&&sc.date===dateVal);
-    const record={id:uid(),studentId:s.id,name:examType,score,grade,memo:memo?memo.value.trim():'',date:dateVal,teacherId:me.id};
+    const domain=dsel?dsel.value:'';
+    // 같은 날짜+시험+영역 기존 레코드 제거 후 추가
+    const idx=SC.findIndex(sc=>sc.studentId===s.id&&sc.name===examType&&sc.domain===domain&&sc.date===dateVal);
+    const record={id:uid(),studentId:s.id,name:examType,domain:domain,score,grade,memo:memo?memo.value.trim():'',date:dateVal,teacherId:me.id};
     if(idx>=0)SC[idx]=record;else SC.push(record);
     saved++;
   });
@@ -1328,8 +1361,29 @@ function renderTchat(){
   }).join('');
 }
 
+// ── 실시간 업데이트 콜백 ──
+window._onFbUpdate=(()=>{
+  let t=null;
+  return function(){
+    if(!me)return;
+    clearTimeout(t);
+    t=setTimeout(()=>{
+      const activeTab=document.querySelector('.tab-btn.active');
+      const tabName=activeTab?activeTab.id.replace('tab-','').replace('-btn',''):'myatt';
+      if(tabName==='students'){renderStudents();renderMonthlyAtt();}
+      else if(tabName==='grades')renderGrades();
+      else if(tabName==='hw')renderHw();
+      else if(tabName==='ann')renderAnn();
+      else renderMyCalendar();
+    },400);
+  };
+})();
+
 // ── 초기화 ──
-(function(){
+(async function(){
+  const ok=await fbInit();
+  document.getElementById('fb-loading').style.display='none';
+  if(!ok){alert('Firebase 연결 실패.\ninterntet 연결을 확인하거나 firebase.js의 설정값을 확인하세요.');}
   const savedId=sessionStorage.getItem('ds_teacher_id');
   if(savedId){
     const t=_l('teachers').find(x=>x.id===savedId);

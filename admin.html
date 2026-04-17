@@ -236,6 +236,30 @@ textarea{resize:vertical;min-height:80px}
 .login-btn{width:100%;padding:13px;background:#4f8ef7;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;margin-top:6px}
 .login-btn:hover{background:#3a6fd4;transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,142,247,0.3)}
 .login-hint{font-size:11px;color:#8896b8;text-align:center;margin-top:12px;line-height:1.6}
+/* ── Mobile ── */
+.mob-menu-btn{display:none;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:4px 8px;line-height:1;flex-shrink:0}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(30,40,80,0.45);z-index:150}
+.sidebar-overlay.open{display:block}
+@media(max-width:767px){
+  .mob-menu-btn{display:flex;align-items:center}
+  .sidebar{transform:translateX(-100%);transition:transform .22s ease;z-index:200}
+  .sidebar.mob-open{transform:translateX(0)}
+  .main{margin-left:0}
+  .topbar{padding:0 14px;gap:8px}
+  .page-content{padding:14px}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+  .stat-value{font-size:20px}
+  .dash-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .form-group.span2{grid-column:span 1}
+  .att-layout{grid-template-columns:1fr}
+  .table-wrap{overflow-x:auto}
+  .modal{width:94vw;max-width:94vw}
+  .modal-lg{width:94vw}
+  .toast{right:10px;bottom:10px}
+  .tabs{flex-wrap:wrap}
+  .section-header{gap:6px}
+}
 </style>
 </head>
 <body>
@@ -253,6 +277,7 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div>
 <div id="app" style="display:none">
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-badge">
@@ -274,13 +299,16 @@ textarea{resize:vertical;min-height:80px}
     <div class="nav-section">재무 / 성과</div>
     <div class="nav-item" onclick="showPage('fees')"><span class="nav-icon">💰</span>원비 / 재무<span class="nav-badge" id="fee-badge" style="display:none">!</span></div>
     <div class="nav-item" onclick="showPage('scores')"><span class="nav-icon">📝</span>성적 / 평가</div>
+    <div class="nav-item" onclick="showPage('examtypes')"><span class="nav-icon">📋</span>시험 종류 관리</div>
     <div class="nav-section">소통</div>
     <div class="nav-item" onclick="showPage('messages')"><span class="nav-icon">💬</span>학부모 소통</div>
     <div class="nav-item" onclick="showPage('teachermsgs')"><span class="nav-icon">💬</span>선생님 소통</div>
     <div class="nav-item" onclick="showPage('studentmsgs')"><span class="nav-icon">💬</span>학생 소통</div>
+    <div class="nav-item" onclick="showPage('teacherchat')"><span class="nav-icon">🗨️</span>강사 간 채팅</div>
     <div class="nav-section">배지 / 공지</div>
     <div class="nav-item" onclick="showPage('badges')"><span class="nav-icon">🏅</span>배지 관리</div>
     <div class="nav-item" onclick="showPage('announcements')"><span class="nav-icon">📢</span>공지사항</div>
+    <div class="nav-item" onclick="showPage('homework')"><span class="nav-icon">📖</span>숙제 현황</div>
     <div class="nav-section">학습 도구</div>
     <div class="nav-item" onclick="openLearningTool()"><span class="nav-icon">📖</span>영어 학습 도구<span style="margin-left:auto;font-size:9px;background:linear-gradient(135deg,#4f8ef7,#7c5cfc);color:#fff;padding:1px 6px;border-radius:10px;font-weight:600">AI</span></div>
     <div class="nav-section">포털 연결</div>
@@ -296,6 +324,7 @@ textarea{resize:vertical;min-height:80px}
 
 <main class="main">
   <div class="topbar">
+    <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="메뉴">☰</button>
     <span class="topbar-title" id="page-title">대시보드</span>
     <div class="topbar-right"><div class="date-badge" id="clock"></div></div>
   </div>
@@ -314,6 +343,15 @@ textarea{resize:vertical;min-height:80px}
         <div class="dash-card"><div class="dash-card-title">📋 최근 등록 학생</div><div id="recent-students-list"></div></div>
         <div class="dash-card"><div class="dash-card-title">📚 수업별 정원</div><div id="class-capacity-list"></div></div>
         <div class="dash-card"><div class="dash-card-title">💰 이번달 원비</div><div id="fee-summary-list"></div></div>
+        <div class="dash-card"><div class="dash-card-title">☁️ Firebase 데이터 이전</div>
+          <div style="padding:8px 0;font-size:13px;color:var(--text2);line-height:1.7">
+            이 컴퓨터의 기존 데이터를 Firebase로 올립니다.<br>
+            <small style="color:var(--text3)">⚠️ 처음 한 번만 실행하세요 (덮어씌워짐)</small>
+          </div>
+          <button class="btn btn-primary" onclick="runMigration()">이 PC 데이터 → Firebase 업로드</button>
+          <button class="btn btn-ghost" style="margin-top:6px" onclick="backupToLocal()">백업</button>
+          <div id="migrate-result" style="margin-top:8px;font-size:13px"></div>
+        </div>
       </div>
     </div>
 
@@ -450,7 +488,7 @@ textarea{resize:vertical;min-height:80px}
         <div class="score-box"><div class="score-num" id="score-max" style="color:var(--green)">-</div><div class="score-lbl">최고 점수</div></div>
         <div class="score-box"><div class="score-num" id="score-cnt" style="color:var(--purple)">0</div><div class="score-lbl">총 평가</div></div>
       </div>
-      <div class="table-wrap"><table><thead><tr><th>학생</th><th>시험명</th><th>날짜</th><th>점수</th><th>등급</th><th>관리</th></tr></thead><tbody id="score-tbody"></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>학생</th><th>시험명</th><th>영역</th><th>날짜</th><th>점수</th><th>등급</th><th>관리</th></tr></thead><tbody id="score-tbody"></tbody></table></div>
     </div>
 
     <!-- MESSAGES -->
@@ -490,6 +528,39 @@ textarea{resize:vertical;min-height:80px}
         <button class="btn btn-primary ml-auto" onclick="openModal('ann')">+ 공지 작성</button>
       </div>
       <div class="table-wrap"><table><thead><tr><th>제목</th><th>대상</th><th>날짜</th><th>중요</th><th>작성자</th><th>관리</th></tr></thead><tbody id="ann-tbody"></tbody></table></div>
+    </div>
+
+    <!-- HOMEWORK -->
+    <div id="page-homework" class="hidden">
+      <div class="section-header">
+        <div class="section-title">숙제 현황</div>
+        <span class="section-count" id="hw-admin-count">0건</span>
+        <select id="hw-class-filter" style="width:130px" onchange="renderHomework()"><option value="">전체 반</option></select>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>반</th><th>제목</th><th>내용</th><th>마감일</th><th>등록일</th><th>강사</th><th>관리</th></tr></thead><tbody id="hw-tbody"></tbody></table></div>
+    </div>
+
+    <!-- EXAM TYPES -->
+    <div id="page-examtypes" class="hidden">
+      <div class="section-header">
+        <div class="section-title">시험 종류 관리</div>
+        <span class="section-count" id="et-count">0종</span>
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <input id="et-new-input" type="text" placeholder="새 시험 종류 입력" style="width:200px" onkeydown="if(event.key==='Enter')addExamType()">
+          <button class="btn btn-primary" onclick="addExamType()">+ 추가</button>
+        </div>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>시험 종류</th><th>구분</th><th>관리</th></tr></thead><tbody id="et-tbody"></tbody></table></div>
+    </div>
+
+    <!-- TEACHER CHAT -->
+    <div id="page-teacherchat" class="hidden">
+      <div class="section-header">
+        <div class="section-title">강사 간 채팅</div>
+        <span class="section-count" id="tc-count">0건</span>
+        <span style="font-size:12px;color:var(--text3);margin-left:8px">읽기 전용</span>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>발신자</th><th>수신자</th><th>내용</th><th>날짜</th></tr></thead><tbody id="tc-tbody"></tbody></table></div>
     </div>
 
   </div>
@@ -558,6 +629,7 @@ textarea{resize:vertical;min-height:80px}
     <div class="form-group span2"><label>시험명 *</label><input id="sc-name" placeholder="6월 월말 평가"></div>
     <div class="form-group"><label>시험일</label><input type="date" id="sc-date"></div>
     <div class="form-group"><label>점수 *</label><input type="number" id="sc-score" placeholder="85" min="0" max="100"></div>
+    <div class="form-group"><label>영역</label><select id="sc-domain"><option value="">전체</option><option value="독해">독해</option><option value="어휘">어휘</option><option value="문법">문법</option><option value="쓰기">쓰기</option></select></div>
     <div class="form-group span2"><label>메모</label><input id="sc-memo" placeholder="특이사항"></div>
   </div></div>
   <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('score')">취소</button><button class="btn btn-primary" onclick="saveScore()">저장</button></div></div>
@@ -644,26 +716,38 @@ textarea{resize:vertical;min-height:80px}
 
 <div class="toast" id="toast-ct"></div>
 
+<!-- Firebase 로딩 오버레이 -->
+<div id="fb-loading" style="position:fixed;inset:0;background:rgba(234,239,255,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px">
+  <div style="width:44px;height:44px;border:4px solid #b8c6f0;border-top-color:#4f8ef7;border-radius:50%;animation:fb-spin 0.8s linear infinite"></div>
+  <div style="font-size:15px;font-weight:600;color:#4a5577">데이터 연결 중...</div>
+  <style>@keyframes fb-spin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
+
 <script>
 // ── DB ──
 const DB={
-  _l(k){try{return JSON.parse(localStorage.getItem('ds_'+k)||'[]')}catch{return[]}},
-  _s(k,v){localStorage.setItem('ds_'+k,JSON.stringify(v))},
-  get students(){return this._l('students')},set students(v){this._s('students',v)},
-  get classes(){return this._l('classes')},set classes(v){this._s('classes',v)},
-  get teachers(){return this._l('teachers')},set teachers(v){this._s('teachers',v)},
-  get fees(){return this._l('fees')},set fees(v){this._s('fees',v)},
-  get scores(){return this._l('scores')},set scores(v){this._s('scores',v)},
-  get messages(){return this._l('messages')},set messages(v){this._s('messages',v)},
-  get teacherMessages(){return this._l('teacherMessages')},set teacherMessages(v){this._s('teacherMessages',v)},
-  get studentMessages(){return this._l('studentMessages')},set studentMessages(v){this._s('studentMessages',v)},
-  get att(){try{return JSON.parse(localStorage.getItem('ds_att')||'{}')}catch{return{}}},
-  set att(v){localStorage.setItem('ds_att',JSON.stringify(v))},
-  get studentBadges(){return this._l('studentBadges')},set studentBadges(v){this._s('studentBadges',v)},
-  get announcements(){return this._l('announcements')},set announcements(v){this._s('announcements',v)},
-  get teacherAtt(){try{return JSON.parse(localStorage.getItem('ds_teacherAtt')||'{}')}catch{return{}}},
-  set teacherAtt(v){localStorage.setItem('ds_teacherAtt',JSON.stringify(v))},
+  get students(){return _l('students')},set students(v){fbWrite('students',v)},
+  get classes(){return _l('classes')},set classes(v){fbWrite('classes',v)},
+  get teachers(){return _l('teachers')},set teachers(v){fbWrite('teachers',v)},
+  get fees(){return _l('fees')},set fees(v){fbWrite('fees',v)},
+  get scores(){return _l('scores')},set scores(v){fbWrite('scores',v)},
+  get messages(){return _l('messages')},set messages(v){fbWrite('messages',v)},
+  get teacherMessages(){return _l('teacherMessages')},set teacherMessages(v){fbWrite('teacherMessages',v)},
+  get studentMessages(){return _l('studentMessages')},set studentMessages(v){fbWrite('studentMessages',v)},
+  get att(){return _lo('att')},set att(v){fbWrite('att',v)},
+  get studentBadges(){return _l('studentBadges')},set studentBadges(v){fbWrite('studentBadges',v)},
+  get announcements(){return _l('announcements')},set announcements(v){fbWrite('announcements',v)},
+  get teacherAtt(){return _lo('teacherAtt')},set teacherAtt(v){fbWrite('teacherAtt',v)},
+  get homework(){return _l('homework')},set homework(v){fbWrite('homework',v)},
+  get examTypes(){return _l('examTypes')},set examTypes(v){fbWrite('examTypes',v)},
+  get teacherChat(){return _l('teacherChat')},
 };
+const DEFAULT_EXAM_TYPES=['독해교재','문법교재','중간평가','단어시험','추가단어시험','모의고사','쓰기평가','기타시험'];
 const BADGE_DEFS=[
   {id:'b1',name:'출석왕',icon:'👑',color:'#d97706',bg:'rgba(217,119,6,0.12)',desc:'이번 달 개근'},
   {id:'b2',name:'성적우수',icon:'🌟',color:'#3b82f6',bg:'rgba(59,130,246,0.12)',desc:'평가 90점 이상'},
@@ -697,7 +781,7 @@ const ADMIN_MASTER='008285';
 function admLogin(){
   const pw=document.getElementById('adm-pw').value.trim();
   if(pw.length<6){toast('비밀번호 6자리를 입력하세요','error');return;}
-  const stored=localStorage.getItem('ds_admin_pw')||ADMIN_MASTER;
+  const stored=(window.CACHE['admin_pw']||'')||ADMIN_MASTER;
   if(pw!==ADMIN_MASTER&&pw!==stored){toast('비밀번호가 올바르지 않습니다','error');return;}
   sessionStorage.setItem('ds_admin_auth','1');
   document.getElementById('login-screen').style.display='none';
@@ -720,7 +804,7 @@ function tick(){
 setInterval(tick,1000);tick();
 
 // ── NAV ──
-const PG={dashboard:'대시보드',attendance:'출결 관리',students:'학생 관리',classes:'수업 관리',teachers:'강사 관리',fees:'원비 / 재무',scores:'성적 / 평가',messages:'학부모 소통',teachermsgs:'선생님 소통',studentmsgs:'학생 소통',badges:'배지 관리',announcements:'공지사항'};
+const PG={dashboard:'대시보드',attendance:'출결 관리',students:'학생 관리',classes:'수업 관리',teachers:'강사 관리',fees:'원비 / 재무',scores:'성적 / 평가',messages:'학부모 소통',teachermsgs:'선생님 소통',studentmsgs:'학생 소통',badges:'배지 관리',announcements:'공지사항',homework:'숙제 현황',examtypes:'시험 종류 관리',teacherchat:'강사 간 채팅'};
 function showPage(name){
   Object.keys(PG).forEach(p=>document.getElementById('page-'+p).classList.add('hidden'));
   document.getElementById('page-'+name).classList.remove('hidden');
@@ -730,9 +814,38 @@ function showPage(name){
   const R={dashboard:renderDashboard,attendance:()=>{populateAttFilter();renderCalendar();if(!selDate)selectDate(todayStr());},
     students:renderStudents,classes:renderClasses,teachers:renderTeachers,fees:renderFees,scores:renderScores,messages:renderMessages,
     teachermsgs:renderTeacherMessages,studentmsgs:renderStudentMessages,
-    badges:renderBadges_admin,announcements:renderAnnouncements};
+    badges:renderBadges_admin,announcements:renderAnnouncements,
+    homework:renderHomework,examtypes:renderExamTypes,teacherchat:renderTeacherChat};
   if(R[name])R[name]();
+  window._currentPage=name;
+  if(window.innerWidth<=767)closeSidebar();
 }
+function toggleSidebar(){
+  document.querySelector('.sidebar').classList.toggle('mob-open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.querySelector('.sidebar').classList.remove('mob-open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ── 실시간 업데이트 콜백 (다른 컴퓨터 변경 반영) ──
+window._onFbUpdate=(()=>{
+  let t=null;
+  return function(){
+    if(sessionStorage.getItem('ds_admin_auth')!=='1')return;
+    clearTimeout(t);
+    t=setTimeout(()=>{
+      const page=window._currentPage||'dashboard';
+      const renders={dashboard:renderDashboard,attendance:()=>{populateAttFilter();renderCalendar();if(selDate)selectDate(selDate);},
+        students:renderStudents,classes:renderClasses,teachers:renderTeachers,fees:renderFees,scores:renderScores,messages:renderMessages,
+        teachermsgs:renderTeacherMessages,studentmsgs:renderStudentMessages,
+        badges:renderBadges_admin,announcements:renderAnnouncements,
+        homework:renderHomework,examtypes:renderExamTypes,teacherchat:renderTeacherChat};
+      if(renders[page])renders[page]();
+    },400);
+  };
+})();
 
 // ── MODAL ──
 function openModal(type){
@@ -1230,7 +1343,7 @@ function saveScore(){
   const score=parseInt(document.getElementById('sc-score').value);
   if(!sId||!name||isNaN(score)){toast('학생, 시험명, 점수를 입력하세요','error');return;}
   const S=DB.scores;
-  S.push({id:uid(),studentId:sId,name,date:document.getElementById('sc-date').value,score,memo:document.getElementById('sc-memo').value.trim()});
+  S.push({id:uid(),studentId:sId,name,date:document.getElementById('sc-date').value,score,domain:document.getElementById('sc-domain').value,memo:document.getElementById('sc-memo').value.trim()});
   DB.scores=S;toast('성적 입력되었습니다');closeModal('score');renderScores();
 }
 function deleteScore(id){if(!confirm('삭제?'))return;DB.scores=DB.scores.filter(s=>s.id!==id);toast('삭제되었습니다');renderScores();}
@@ -1243,10 +1356,11 @@ function renderScores(){
   else{document.getElementById('score-avg').textContent='-';document.getElementById('score-max').textContent='-';}
   document.getElementById('score-cnt').textContent=F.length;
   const tb=document.getElementById('score-tbody');
-  if(!F.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📝</div><div class="empty-text">성적 없음</div></div></td></tr>`;return;}
+  if(!F.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📝</div><div class="empty-text">성적 없음</div></div></td></tr>`;return;}
   tb.innerHTML=[...F].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(s=>{
     const st=S.find(x=>x.id===s.studentId);const g=grade(s.score);
     return `<tr><td class="td-name">${st?st.name:'?'}</td><td>${s.name}</td>
+      <td>${s.domain?`<span class="badge badge-gray">${s.domain}</span>`:'<span style="color:var(--text3)">-</span>'}</td>
       <td style="font-size:12px;color:var(--text3)">${s.date||'-'}</td>
       <td><span style="font-family:var(--mono);font-size:16px;font-weight:700;color:${s.score>=80?'var(--green)':s.score>=60?'var(--amber)':'var(--red)'}">${s.score}</span></td>
       <td><span class="badge ${g.c}">${g.l}</span></td>
@@ -1465,118 +1579,246 @@ function viewAnn(id){
   alert(`[${a.date}] ${a.title}\n\n${a.content}`);
 }
 
+// ══ HOMEWORK ══
+function renderHomework(){
+  const C=DB.classes,T=DB.teachers;
+  const cf=document.getElementById('hw-class-filter');
+  const prevVal=cf.value;
+  cf.innerHTML='<option value="">전체 반</option>';
+  C.forEach(c=>cf.innerHTML+=`<option value="${c.id}">${c.name}</option>`);
+  cf.value=prevVal;
+  const filterCls=cf.value;
+  let HW=DB.homework;
+  if(filterCls)HW=HW.filter(h=>h.classId===filterCls);
+  HW=[...HW].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('hw-admin-count').textContent=HW.length+'건';
+  const tb=document.getElementById('hw-tbody');
+  if(!HW.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📖</div><div class="empty-text">등록된 숙제 없음</div></div></td></tr>`;return;}
+  tb.innerHTML=HW.map(h=>{
+    const cls=C.find(c=>c.id===h.classId);
+    const t=T.find(x=>x.id===h.teacherId);
+    const urlHtml=h.url?`<a href="${h.url}" target="_blank" style="color:var(--accent);font-size:11px">링크</a>`:'<span style="color:var(--text3)">-</span>';
+    return `<tr>
+      <td><span class="badge badge-blue">${cls?cls.name:'전체'}</span></td>
+      <td class="td-name">${h.title}</td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text2)">${h.desc||urlHtml}</td>
+      <td style="font-size:12px;color:var(--text3)">${h.dueDate||'-'}</td>
+      <td style="font-size:12px;color:var(--text3)">${h.date||'-'}</td>
+      <td>${t?t.name:'<span style="color:var(--text3)">-</span>'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteHomework('${h.id}')">삭제</button></td></tr>`;
+  }).join('');
+}
+function deleteHomework(id){
+  if(!confirm('이 숙제를 삭제하시겠습니까?'))return;
+  DB.homework=DB.homework.filter(h=>h.id!==id);
+  renderHomework();toast('삭제되었습니다');
+}
+
+// ══ EXAM TYPES ══
+function renderExamTypes(){
+  const types=DB.examTypes;
+  document.getElementById('et-count').textContent=types.length+'종';
+  const tb=document.getElementById('et-tbody');
+  if(!types.length){tb.innerHTML=`<tr><td colspan="3"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">시험 종류 없음</div></div></td></tr>`;return;}
+  tb.innerHTML=types.map(t=>{
+    const isDefault=DEFAULT_EXAM_TYPES.includes(t);
+    return `<tr>
+      <td class="td-name">${t}</td>
+      <td><span class="badge ${isDefault?'badge-gray':'badge-blue'}">${isDefault?'기본':'추가'}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteExamType('${t.replace(/'/g,"\\'")}')">삭제</button></td></tr>`;
+  }).join('');
+}
+function addExamType(){
+  const input=document.getElementById('et-new-input');
+  const val=input.value.trim();
+  if(!val){toast('시험 종류를 입력하세요','error');return;}
+  const types=DB.examTypes.length?DB.examTypes:[...DEFAULT_EXAM_TYPES];
+  if(types.includes(val)){toast('이미 존재하는 시험 종류입니다','error');return;}
+  types.push(val);
+  DB.examTypes=types;
+  input.value='';
+  renderExamTypes();toast('추가되었습니다');
+}
+function deleteExamType(name){
+  if(!confirm(`'${name}' 시험 종류를 삭제하시겠습니까?`))return;
+  let types=DB.examTypes.length?DB.examTypes:[...DEFAULT_EXAM_TYPES];
+  types=types.filter(t=>t!==name);
+  DB.examTypes=types;
+  renderExamTypes();toast('삭제되었습니다');
+}
+
+// ══ TEACHER CHAT ══
+function renderTeacherChat(){
+  const T=DB.teachers;
+  const msgs=[...DB.teacherChat].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('tc-count').textContent=msgs.length+'건';
+  const tb=document.getElementById('tc-tbody');
+  if(!msgs.length){tb.innerHTML=`<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">🗨️</div><div class="empty-text">강사 간 메시지 없음</div></div></td></tr>`;return;}
+  tb.innerHTML=msgs.map(m=>{
+    const from=T.find(t=>t.id===m.fromTeacherId);
+    const toName=m.toTeacherId==='all'?'전체 강사':(T.find(t=>t.id===m.toTeacherId)||{}).name||'?';
+    return `<tr>
+      <td class="td-name">${from?from.name:'?'}</td>
+      <td>${m.toTeacherId==='all'?'<span class="badge badge-purple">전체</span>':`<span class="badge badge-blue">${toName}</span>`}</td>
+      <td style="max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px">${m.content}</td>
+      <td style="font-size:12px;color:var(--text3)">${m.date||'-'}</td></tr>`;
+  }).join('');
+}
+
+// ══ FIREBASE 마이그레이션 ══
+async function applyExcelData(){
+  if(!confirm('엑셀 학생 명단(61명)을 Firebase에 적용합니다.\n기존 학생·수업·강사 데이터가 교체됩니다. 계속할까요?'))return;
+  const el=document.getElementById('migrate-result');
+  el.textContent='적용 중...';
+  const d=buildInitData();
+  DB.teachers=d.teachers;
+  DB.classes=d.classes;
+  DB.students=d.students;
+  el.innerHTML='<span style="color:var(--green)">✅ 학생 61명·반 18개 적용 완료! 페이지를 새로고침하세요.</span>';
+  renderDashboard();
+}
+
+function backupToLocal(){
+  const el=document.getElementById('migrate-result');
+  const keys=['students','classes','teachers','fees','scores','messages','teacherMessages','studentMessages','att','teacherAtt','studentBadges','announcements','homework','examTypes','teacherChat'];
+  let count=0;
+  keys.forEach(k=>{
+    const v=window.CACHE[k];
+    if(v!==undefined){localStorage.setItem('ds_'+k,JSON.stringify(v));count++;}
+  });
+  el.innerHTML=`<span style="color:var(--green)">✅ 이 PC에 백업 완료 (${count}개 항목)</span>`;
+}
+
+async function runMigration(){
+  const el=document.getElementById('migrate-result');
+  el.textContent='업로드 중...';
+  const count=await migrateFromLocalStorage();
+  el.innerHTML=count>0
+    ?`<span style="color:var(--green)">✅ ${count}개 데이터 업로드 완료! 다른 컴퓨터에서 새로고침하세요.</span>`
+    :`<span style="color:var(--text3)">이 PC에 이전할 데이터가 없습니다.</span>`;
+  if(count>0)renderDashboard();
+}
+
 // ══ LEARNING TOOL ══
 function openLearningTool(){
   // Open in new tab — expects learning_tool.html in same directory
   window.open('learning_tool.html','_blank');
 }
 
+// ══ 실제 학생 데이터 초기화 함수 (엑셀 DS_English 학생리스트_20260417 기준) ══
+function buildInitData(){
+  const t1=uid(),t2=uid();
+  const teachers=[
+    {id:t1,name:'이선생',phone:'010-1111-2222',subjects:'영어 독해, 문법',hire:'2023-03-01',salary:300,contract:'정규직',memo:''},
+    {id:t2,name:'박선생',phone:'010-3333-4444',subjects:'영어 회화, 수능',hire:'2022-09-01',salary:320,contract:'정규직',memo:''}
+  ];
+  const cT5=uid(),cT3=uid(),cT2=uid(),c3r=uid(),cT1=uid(),cT4=uid();
+  const cF2=uid(),cF4=uid(),cF7=uid(),cFP9=uid();
+  const cM1b=uid(),cM2a=uid(),cM7a=uid(),c7mid=uid();
+  const cMidB=uid(),cMidC=uid(),cSong=uid(),c1r=uid();
+  const classes=[
+    {id:cT5,  name:'T5반',       level:'고급',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:cT3,  name:'T3반',       level:'중급',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:cT2,  name:'T2반',       level:'초급',teacherId:t2,schedule:'',max:15,textbook:''},
+    {id:c3r,  name:'3반',        level:'초급',teacherId:t2,schedule:'',max:15,textbook:''},
+    {id:cT1,  name:'T1반',       level:'초급',teacherId:t2,schedule:'',max:15,textbook:''},
+    {id:cT4,  name:'T4반',       level:'중급',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:cF2,  name:'F2반',       level:'초급',teacherId:t2,schedule:'',max:15,textbook:''},
+    {id:cF4,  name:'F4반',       level:'중급',teacherId:t2,schedule:'',max:15,textbook:''},
+    {id:cF7,  name:'F7반',       level:'중급',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:cFP9, name:'FP9반',      level:'중급',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:cM1b, name:'M1 리딩 b',  level:'중등',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:cM2a, name:'M2 리딩 a',  level:'중등',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:cM7a, name:'M7 리딩 a',  level:'중등',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:c7mid,name:'7시 중등리딩',level:'중등',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:cMidB,name:'중등대비 b', level:'중등',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:cMidC,name:'중등대비 c', level:'중등',teacherId:t1,schedule:'',max:15,textbook:''},
+    {id:cSong,name:'Song반',     level:'',    teacherId:t2,schedule:'',max:15,textbook:''},
+    {id:c1r,  name:'1반',        level:'초급',teacherId:t2,schedule:'',max:15,textbook:''},
+  ];
+  const cm={'T5':cT5,'T3':cT3,'T2':cT2,'3':c3r,'T1':cT1,'T4':cT4,'F2':cF2,'F4':cF4,'F7':cF7,'FP9':cFP9,'M1 리딩 b':cM1b,'M2 리딩 a':cM2a,'M7 리딩 a':cM7a,'7시 중등리딩':c7mid,'중등대비 b':cMidB,'중등대비 c':cMidC,'song':cSong,'1':c1r};
+  const raw=[
+    ['강율',   '',          '010-4922-3857','010-4922-3857','재원',''],
+    ['강예준', '',          '010-4922-3857','010-4922-3857','재원',''],
+    ['강현준', '',          '010-9885-7222','010-9885-7222','재원',''],
+    ['고윤우', '',          '010-9881-8549','010-9881-8549','재원',''],
+    ['권수아', '',          '010-7174-9729','010-7174-9729','재원',''],
+    ['김가원', '',          '010-5225-1773','010-5225-1773','재원',''],
+    ['김규현', '',          '010-5225-1773','010-5225-1773','재원',''],
+    ['김규원', '중등대비 c','010-8642-9852','010-8642-9852','재원',''],
+    ['김도우', 'T3',        '010-8642-9852','010-8642-9852','재원',''],
+    ['김도영', 'T3',        '010-4760-5149','010-4760-5149','재원',''],
+    ['김민찬', 'T3',        '010-3771-9286','010-3771-9286','재원',''],
+    ['김서이', 'T2',        '010-3395-7957','010-3395-7957','재원',''],
+    ['김소정', 'T2',        '010-4741-1957','010-4741-1957','재원',''],
+    ['김예슬', '3',         '010-4557-7972','010-4557-7972','재원',''],
+    ['김주원', '3',         '010-8559-6250','010-8559-6250','재원',''],
+    ['김주성', 'T5',        '010-5068-1857','010-5068-1857','재원',''],
+    ['김지성', 'M1 리딩 b', '010-5068-1857','010-5068-1857','재원','중3'],
+    ['김지율', 'F7',        '010-4542-0240','010-4542-0240','재원',''],
+    ['김서윤', 'F7',        '010-4542-0240','010-4542-0240','재원',''],
+    ['김찬중', 'F7',        '010-8399-1500','010-8399-1500','재원',''],
+    ['문찬빈', 'F7',        '010-9496-1734','010-9496-1734','재원',''],
+    ['박선율', 'F7',        '010-7192-8856','010-7192-8856','재원',''],
+    ['박세빛', '중등대비 b','010-2750-1884','010-2750-1884','재원',''],
+    ['박예빛', 'FP9',       '010-2750-1884','010-2750-1884','재원',''],
+    ['박수민', 'FP9',       '010-8524-2665','010-8524-2665','재원',''],
+    ['박시연', 'FP9',       '010-8820-7759','010-8820-7759','재원',''],
+    ['박시윤', 'FP9',       '010-7171-9660','010-7171-9660','재원',''],
+    ['박재희', 'FP9',       '010-8010-9963','010-8010-9963','재원',''],
+    ['박현서', 'FP9',       '010-4194-8209','010-4194-8209','재원',''],
+    ['안리현', 'T1',        '010-6649-6424','010-6649-6424','재원',''],
+    ['안현준', 'T1',        '010-3784-9869','010-3784-9869','재원',''],
+    ['안예준', 'T1',        '010-3784-9869','010-3784-9869','재원',''],
+    ['양기원', 'T1',        '010-5100-5694','010-5100-5694','재원',''],
+    ['양가은', 'F2',        '010-5100-5694','010-5100-5694','재원',''],
+    ['오 윤',  'F2',        '010-7111-6709','010-7111-6709','재원',''],
+    ['윤성현', 'F2',        '010-4708-3614','010-4708-3614','재원',''],
+    ['이명하', '7시 중등리딩','010-2780-4934','010-2780-4934','재원','중3'],
+    ['이승하', 'M2 리딩 a', '010-2780-4934','010-2780-4934','재원','중3'],
+    ['이보미', 'M2 리딩 a', '010-4591-2454','010-4591-2454','재원',''],
+    ['이원희', 'song',      '010-7143-3625','010-7143-3625','재원',''],
+    ['이지아', 'F4',        '010-3377-4976','010-3377-4976','재원',''],
+    ['이지오', '1',         '010-7445-2602','010-7445-2602','재원',''],
+    ['이지호', 'M7 리딩 a', '010-7100-5179','010-7100-5179','재원',''],
+    ['이우찬', 'F4',        '010-7100-5179','010-7100-5179','재원',''],
+    ['이민준', 'F4',        '010-7100-5179','010-7100-5179','재원',''],
+    ['임채환', 'song',      '010-4749-6563','010-4749-6563','재원','중1'],
+    ['임현균', 'T3',        '010-9164-2242','010-9164-2242','재원',''],
+    ['정동건', 'F2',        '010-6318-6910','010-6318-6910','재원',''],
+    ['정승아', 'song',      '010-7602-6119','010-7602-6119','재원',''],
+    ['정현주', 'T4',        '010-6658-9564','010-6658-9564','재원',''],
+    ['조우진', 'song',      '010-4569-1504','010-4569-1504','재원',''],
+    ['최가은', 'song',      '010-9658-4292','010-9658-4292','재원',''],
+    ['최민우', 'F7',        '010-7736-9688','010-7736-9688','재원',''],
+    ['최준우', 'F7',        '010-7736-9688','010-7736-9688','재원',''],
+    ['최민우a','F7',        '010-7174-4892','010-7174-4892','재원',''],
+    ['탁서준', 'F4',        '010-9222-1960','010-9222-1960','재원',''],
+    ['한송연', 'song',      '010-9275-4846','010-9275-4846','재원','고1'],
+    ['한여름', 'song',      '010-5414-3039','010-5414-3039','재원',''],
+    ['허윤주', 'song',      '010-8606-3712','010-8606-3712','재원',''],
+    ['허윤선', 'song',      '010-8606-3712','010-8606-3712','재원',''],
+    ['황지후', 'T2',        '010-6750-3856','010-6750-3856','재원',''],
+  ];
+  const students=raw.map(([name,cls,phone,parent,status,memo])=>({
+    id:uid(),name,classId:cm[cls]||'',level:'',phone,parent,date:'2026-04-17',status,memo
+  }));
+  return {teachers,classes,students};
+}
+
 // ══ INIT ══
-(function(){
-  if(!DB.students.length){
-    // 강사
-    const t1=uid(),t2=uid();
-    DB.teachers=[
-      {id:t1,name:'이선생',phone:'010-1111-2222',subjects:'영어 독해, 문법',hire:'2023-03-01',salary:300,contract:'정규직',memo:'T5반·T3반 담당'},
-      {id:t2,name:'박선생',phone:'010-3333-4444',subjects:'영어 회화, 수능',hire:'2022-09-01',salary:320,contract:'정규직',memo:'T2반·수능대비반·3반 담당'}
-    ];
-    // 수업
-    const cT5=uid(),cT3=uid(),cT2=uid(),cSAT=uid(),c3r=uid();
-    DB.classes=[
-      {id:cT5,name:'T5반',level:'고급',teacherId:t1,schedule:'월·수·금 오후 5시',max:10,textbook:''},
-      {id:cT3,name:'T3반',level:'중급',teacherId:t1,schedule:'화·목 오후 5시',max:6,textbook:''},
-      {id:cT2,name:'T2반',level:'초급',teacherId:t2,schedule:'월·수 오후 4시',max:6,textbook:''},
-      {id:cSAT,name:'수능대비반',level:'특급',teacherId:t2,schedule:'월~금 오후 7시',max:5,textbook:''},
-      {id:c3r,name:'3반',level:'초급',teacherId:t2,schedule:'화·목 오후 3시',max:5,textbook:''}
-    ];
-    // 학생 (학원 관리.png 데이터 기준)
-    const s1=uid(),s2=uid(),s3=uid(),s4=uid(),s5=uid(),s6=uid(),s7=uid(),s8=uid();
-    const s9=uid(),s10=uid(),s11=uid(),s12=uid(),s13=uid(),s14=uid(),s15=uid(),s16=uid();
-    DB.students=[
-      // T5반
-      {id:s1,name:'강훈',level:'고급',phone:'010-4922-3857',parent:'010-4922-3857',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 강예준'},
-      {id:s2,name:'강예준',level:'고급',phone:'010-4922-3857',parent:'010-4922-3857',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 강훈'},
-      {id:s3,name:'강현서',level:'고급',phone:'010-9885-7222',parent:'010-9885-7222',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 강현준'},
-      {id:s4,name:'강현준',level:'고급',phone:'010-9885-7222',parent:'010-9885-7222',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 강현서'},
-      {id:s5,name:'고윤우',level:'고급',phone:'010-9881-8549',parent:'010-9881-8549',classId:cT5,date:'2025-03-01',status:'재원',memo:''},
-      {id:s6,name:'권수아',level:'고급',phone:'010-7174-9729',parent:'010-7174-9729',classId:cT5,date:'2025-03-01',status:'재원',memo:''},
-      {id:s7,name:'김가원',level:'고급',phone:'010-5225-1773',parent:'010-5225-1773',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 김규현'},
-      {id:s8,name:'김규현',level:'고급',phone:'010-5225-1773',parent:'010-5225-1773',classId:cT5,date:'2025-03-01',status:'재원',memo:'형제: 김가원'},
-      // 수능대비반
-      {id:s9,name:'김규원',level:'특급',phone:'010-8642-9852',parent:'010-8642-9852',classId:cSAT,date:'2025-03-01',status:'재원',memo:'형제: 김도우'},
-      {id:s10,name:'김도우',level:'특급',phone:'010-8642-9852',parent:'010-8642-9852',classId:cSAT,date:'2025-03-01',status:'재원',memo:'형제: 김규원'},
-      // T3반
-      {id:s11,name:'김도영',level:'중급',phone:'010-4760-5149',parent:'010-4760-5149',classId:cT3,date:'2025-03-01',status:'재원',memo:''},
-      {id:s12,name:'김민찬',level:'중급',phone:'010-3771-9286',parent:'010-3771-9286',classId:cT3,date:'2025-03-01',status:'재원',memo:''},
-      // T2반
-      {id:s13,name:'김서이',level:'초급',phone:'010-3395-7957',parent:'010-3395-7957',classId:cT2,date:'2025-03-01',status:'재원',memo:''},
-      {id:s14,name:'김소정',level:'초급',phone:'010-4741-1957',parent:'010-4741-1957',classId:cT2,date:'2025-03-01',status:'재원',memo:''},
-      // 3반
-      {id:s15,name:'김예슬',level:'초급',phone:'010-4557-7972',parent:'010-4557-7972',classId:c3r,date:'2025-03-01',status:'재원',memo:''},
-      {id:s16,name:'김주원',level:'초급',phone:'010-8559-6250',parent:'010-8559-6250',classId:c3r,date:'2025-03-01',status:'재원',memo:''}
-    ];
-    // 원비 (2026년 3월 기준, 단위: 만원)
-    DB.fees=[
-      {id:uid(),studentId:s1,month:'2026-03',amount:27,status:'미납',paidDate:''},
-      {id:uid(),studentId:s2,month:'2026-03',amount:27,status:'미납',paidDate:''},
-      {id:uid(),studentId:s3,month:'2026-03',amount:27,status:'미납',paidDate:''},
-      {id:uid(),studentId:s4,month:'2026-03',amount:28,status:'납부완료',paidDate:'2026-03-23'},
-      {id:uid(),studentId:s5,month:'2026-03',amount:28,status:'납부완료',paidDate:'2026-03-20'},
-      {id:uid(),studentId:s6,month:'2026-03',amount:28,status:'납부완료',paidDate:'2026-03-20'},
-      {id:uid(),studentId:s7,month:'2026-03',amount:28,status:'납부완료',paidDate:'2026-03-24'},
-      {id:uid(),studentId:s8,month:'2026-03',amount:26,status:'납부완료',paidDate:'2026-03-24'},
-      {id:uid(),studentId:s9,month:'2026-03',amount:29,status:'미납',paidDate:''},
-      {id:uid(),studentId:s10,month:'2026-03',amount:28,status:'미납',paidDate:''},
-      {id:uid(),studentId:s11,month:'2026-03',amount:23,status:'납부완료',paidDate:'2026-03-23'},
-      {id:uid(),studentId:s12,month:'2026-03',amount:27,status:'납부완료',paidDate:'2026-03-05'},
-      {id:uid(),studentId:s13,month:'2026-03',amount:30,status:'납부완료',paidDate:'2026-03-25'},
-      {id:uid(),studentId:s14,month:'2026-03',amount:30,status:'미납',paidDate:''},
-      {id:uid(),studentId:s15,month:'2026-03',amount:28,status:'납부완료',paidDate:'2026-03-25'},
-      {id:uid(),studentId:s16,month:'2026-03',amount:27,status:'미납',paidDate:''}
-    ];
-    // 성적 (3월 월말 평가)
-    DB.scores=[
-      {id:uid(),studentId:s1,name:'3월 월말 평가',date:'2026-03-28',score:82,memo:''},
-      {id:uid(),studentId:s2,name:'3월 월말 평가',date:'2026-03-28',score:88,memo:''},
-      {id:uid(),studentId:s3,name:'3월 월말 평가',date:'2026-03-28',score:76,memo:''},
-      {id:uid(),studentId:s4,name:'3월 월말 평가',date:'2026-03-28',score:91,memo:''},
-      {id:uid(),studentId:s5,name:'3월 월말 평가',date:'2026-03-28',score:85,memo:''},
-      {id:uid(),studentId:s6,name:'3월 월말 평가',date:'2026-03-28',score:79,memo:''},
-      {id:uid(),studentId:s7,name:'3월 월말 평가',date:'2026-03-28',score:93,memo:''},
-      {id:uid(),studentId:s8,name:'3월 월말 평가',date:'2026-03-28',score:88,memo:''},
-      {id:uid(),studentId:s9,name:'3월 모의고사',date:'2026-03-28',score:94,memo:''},
-      {id:uid(),studentId:s10,name:'3월 모의고사',date:'2026-03-28',score:87,memo:''},
-      {id:uid(),studentId:s11,name:'3월 월말 평가',date:'2026-03-28',score:74,memo:''},
-      {id:uid(),studentId:s12,name:'3월 월말 평가',date:'2026-03-28',score:81,memo:''},
-      {id:uid(),studentId:s13,name:'3월 월말 평가',date:'2026-03-28',score:68,memo:''},
-      {id:uid(),studentId:s14,name:'3월 월말 평가',date:'2026-03-28',score:72,memo:''},
-      {id:uid(),studentId:s15,name:'3월 월말 평가',date:'2026-03-28',score:77,memo:''},
-      {id:uid(),studentId:s16,name:'3월 월말 평가',date:'2026-03-28',score:83,memo:''}
-    ];
-    // 출결 (오늘 기준 샘플)
-    const att={};const td=todayStr();att[dKey(td)]={};
-    [s1,s2,s4,s5,s7,s9,s11,s12,s13,s15].forEach(s=>att[dKey(td)][s]='att');
-    att[dKey(td)][s3]='late';att[dKey(td)][s6]='late';
-    att[dKey(td)][s8]='abs';att[dKey(td)][s10]='abs';att[dKey(td)][s14]='abs';
-    att[dKey(td)][s16]='att';
-    DB.att=att;
-    // 샘플 배지
-    DB.studentBadges=[
-      {id:uid(),studentId:s1,badgeId:'b1',teacherId:t1,date:'2026-03-31',note:'3월 개근'},
-      {id:uid(),studentId:s4,badgeId:'b2',teacherId:t1,date:'2026-03-28',note:'월말평가 91점'},
-      {id:uid(),studentId:s7,badgeId:'b2',teacherId:t1,date:'2026-03-28',note:'월말평가 93점'},
-      {id:uid(),studentId:s9,badgeId:'b2',teacherId:t2,date:'2026-03-28',note:'모의고사 94점'},
-      {id:uid(),studentId:s5,badgeId:'b1',teacherId:t1,date:'2026-03-31',note:'3월 개근'},
-      {id:uid(),studentId:s6,badgeId:'b4',teacherId:t1,date:'2026-03-28',note:'수업 태도 우수'},
-      {id:uid(),studentId:s12,badgeId:'b3',teacherId:t1,date:'2026-03-28',note:'성적 10점 향상'},
-      {id:uid(),studentId:s13,badgeId:'b6',teacherId:t2,date:'2026-03-28',note:'집중력 칭찬'},
-    ];
-    // 샘플 공지사항
-    DB.announcements=[
-      {id:uid(),title:'4월 수업 일정 안내',content:'안녕하세요. 4월 수업 일정을 안내드립니다.\n\n- 4월 5일(일): 공휴일로 수업 없음\n- 4월 중간고사 대비 특강은 별도 안내 예정입니다.\n\n문의사항은 학원으로 연락 주세요.',date:'2026-04-01',teacherId:t1,targetClass:'all',important:true},
-      {id:uid(),title:'T5반 교재 변경 안내',content:'4월부터 T5반의 교재가 변경됩니다.\n새 교재: Advanced Grammar in Use (3rd Edition)\n첫 수업 시 배부 예정이오니 별도 구매하지 마세요.',date:'2026-04-02',teacherId:t1,targetClass:cT5,important:false},
-      {id:uid(),title:'3월 원비 미납 안내',content:'3월 원비가 아직 미납된 학생이 있습니다.\n빠른 시일 내에 납부 부탁드립니다.\n\n계좌: 신한은행 110-123-456789 DS English',date:'2026-04-03',teacherId:t2,targetClass:'all',important:true},
-    ];
+(async function(){
+  // Firebase 연결
+  const ok = await fbInit();
+  document.getElementById('fb-loading').style.display='none';
+  if(!ok){alert('Firebase 연결 실패.\n인터넷 연결을 확인하거나 firebase.js의 설정값을 확인하세요.');}
+
+  // 학생이 없거나 50명 미만(구 샘플 데이터)이면 엑셀 데이터로 초기화
+  if(DB.students.length < 50){
+    const d=buildInitData();
+    DB.teachers=d.teachers;
+    DB.classes=d.classes;
+    DB.students=d.students;
   }
   updateFeeBadge();
   // 로그인 체크
